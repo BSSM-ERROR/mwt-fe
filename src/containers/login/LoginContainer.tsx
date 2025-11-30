@@ -5,7 +5,7 @@ import Image from 'next/image';
 
 export default function LoginContainer() {
   return (
-    <S.Container>
+    <S.Wrapper>
       <S.Title>
         My<br />
         Waifu<br />
@@ -58,6 +58,6 @@ export default function LoginContainer() {
           카카오톡 계정으로 로그인
         </S.LoginButton>
       </S.ButtonWrapper>
-    </S.Container>
+    </S.Wrapper>
   );
 }

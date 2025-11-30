@@ -1,17 +1,12 @@
 import styled from '@emotion/styled';
 
-export const Container = styled.div`
-  min-height: 100vh;
-  width: 100%;
+export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   padding: 40px 20px;
+  min-height: 100vh;
   position: relative;
-  background-image: url('/assets/background.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
 
   &::before {
     content: '';
@@ -20,12 +15,11 @@ export const Container = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7));
     z-index: 0;
   }
 
-  & > * {
+  > * {
     position: relative;
     z-index: 1;
   }
