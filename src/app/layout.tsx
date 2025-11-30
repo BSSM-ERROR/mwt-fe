@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import ReactQueryProvider from "@/lib/ReactQueryProvider";
 import { theJamsil } from "@/styles/fonts";
+import GlobalStyles from "@/styles/GlobalStyles";
+import LayoutContainer from "@/components/layout/RootLayout";
 
 export const metadata: Metadata = {
     title: "MyWaifuTeacher",
@@ -16,7 +18,10 @@ export default function RootLayout({
         <html lang="en">
             <body className={theJamsil.className}>
                 <ReactQueryProvider>
-                    {children}
+                    <GlobalStyles />
+                    <LayoutContainer>
+                        {children}
+                    </LayoutContainer>
                 </ReactQueryProvider>
             </body>
         </html>
