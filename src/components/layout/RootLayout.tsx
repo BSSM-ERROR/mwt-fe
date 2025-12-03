@@ -3,6 +3,8 @@
 import styled from "@emotion/styled";
 import { ReactNode } from "react";
 
+import Live2DViewer from "@/components/ui/Live2d/Live2DViewer";
+
 const Container = styled.div`
   max-width: 600px;
   width: 100%;
@@ -40,6 +42,20 @@ interface RootLayoutProps {
   children: ReactNode;
 }
 
+const StyledLive2DViewer = styled(Live2DViewer)`
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0 !important;
+`;
+
 export default function RootLayout({ children }: RootLayoutProps) {
-  return <Container>{children}</Container>;
+  return (
+    <Container>
+      <StyledLive2DViewer speaking={true} />
+      {children}
+    </Container>
+  );
 };
