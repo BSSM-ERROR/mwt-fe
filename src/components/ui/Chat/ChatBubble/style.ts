@@ -1,0 +1,52 @@
+import styled from '@emotion/styled';
+import { frostedGlass } from '../shared';
+
+export const MessageWrapper = styled.div<{ isAI?: boolean }>`
+  display: flex;
+  justify-content: ${({ isAI }) => (isAI ? 'flex-start' : 'flex-end')};
+  width: 100%;
+`;
+
+export const MessageBubble = styled.div<{ isAI?: boolean }>`
+  max-width: 85%;
+  padding: 16px 20px;
+  border-radius: ${({ isAI }) => (isAI ? '20px 20px 20px 4px' : '20px 20px 4px 20px')};
+  background: ${({ isAI }) => (isAI ? '#F35151' : 'rgba(255, 255, 255, 0.85)')};
+  ${frostedGlass}
+  color: ${({ isAI }) => (isAI ? '#FFFFFF' : '#333333')};
+  font-family: 'The Jamsil', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.5;
+  position: relative;
+`;
+
+export const MessageActions = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  gap: 12px;
+`;
+
+export const ActionButton = styled.button`
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: rgba(255, 255, 255, 0.9);
+  }
+`;
