@@ -3,7 +3,12 @@
 import styled from "@emotion/styled";
 import { ReactNode } from "react";
 
-import Live2DViewer from "@/components/ui/Live2d/Live2DViewer";
+import dynamic from 'next/dynamic';
+import { useLive2DStore } from '@/store/useLive2DStore';
+
+const Live2DViewer = dynamic(() => import('@/components/ui/Live2d/Live2DViewer'), {
+  ssr: false,
+});
 
 const Container = styled.div`
   max-width: 600px;
@@ -52,9 +57,11 @@ const StyledLive2DViewer = styled(Live2DViewer)`
 `;
 
 export default function RootLayout({ children }: RootLayoutProps) {
+  const isLive2DVisible = useLive2DStore((state) => state.isVisible);
+
   return (
     <Container>
-      <StyledLive2DViewer speaking={true} />
+      {isLive2DVisible && <StyledLive2DViewer speaking={true} />}
       {children}
     </Container>
   );
