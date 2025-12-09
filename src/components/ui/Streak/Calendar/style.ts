@@ -33,7 +33,6 @@ export const NavButton = styled.button`
 `;
 
 export const MonthYear = styled.span`
-  font-family: 'Inter', sans-serif;
   font-weight: 500;
   font-size: 16px;
   color: #545052;
