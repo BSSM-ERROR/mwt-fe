@@ -34,7 +34,6 @@ export const MenuWrapper = styled.div`
   height: 100%;
   padding: 0 1rem;
   position: relative;
-  transform: translateY(-0.5rem);
 `;
 
 export const MenuItem = styled.div`
@@ -68,7 +67,7 @@ export const IconWrapper = styled.div`
 
   @media (min-width: 768px) {
     width: 2.5rem;
-    height: 2%.5;
+    height: 2.5rem;
   }
 
   img {
