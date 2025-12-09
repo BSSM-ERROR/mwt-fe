@@ -1,43 +1,39 @@
 'use client';
+
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
-import type { CalendarProps, CalendarDay } from '@/types/calendar';
+import { format, addMonths, subMonths } from 'date-fns';
+import type { CalendarProps } from '@/types/calendar';
+import { generateCalendarDays, getWeekdays, getStreakPosition } from '@/utils/calendar';
 import * as S from './style';
 
-const WEEKDAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+export default function Calendar({ completedDates }: CalendarProps) {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const weekdays = useMemo(() => getWeekdays(), []);
 
-const getStreakPosition = (week: CalendarDay[], index: number): 'single' | 'start' | 'middle' | 'end' | 'none' => {
-  if (week[index].status !== 'streak') return 'none';
+  const days = useMemo(() => {
+    return generateCalendarDays(
+      completedDates,
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      2
+    );
+  }, [completedDates, currentDate]);
 
-  const prevIsStreak = index > 0 && week[index - 1].status === 'streak';
-  const nextIsStreak = index < week.length - 1 && week[index + 1].status === 'streak';
-
-  if (prevIsStreak && nextIsStreak) return 'middle';
-  if (prevIsStreak) return 'end';
-  if (nextIsStreak) return 'start';
-  return 'single';
-};
-
-export default function Calendar({
-  month,
-  year,
-  days,
-  onPrevMonth,
-  onNextMonth
-}: CalendarProps) {
   return (
     <S.Container>
       <S.Header>
-        <S.NavButton onClick={onPrevMonth}>
+        <S.NavButton onClick={() => setCurrentDate(subMonths(currentDate, 1))}>
           <Image src="/icons/chevron-left.svg" alt="Previous" width={8} height={18} />
         </S.NavButton>
-        <S.MonthYear>{month} {year}</S.MonthYear>
-        <S.NavButton onClick={onNextMonth}>
+        <S.MonthYear>{format(currentDate, 'MMM yyyy').toUpperCase()}</S.MonthYear>
+        <S.NavButton onClick={() => setCurrentDate(addMonths(currentDate, 1))}>
           <Image src="/icons/chevron-right.svg" alt="Next" width={8} height={18} />
         </S.NavButton>
       </S.Header>
 
       <S.WeekdayRow>
-        {WEEKDAYS.map((day) => (
+        {weekdays.map((day) => (
           <S.Weekday key={day}>{day}</S.Weekday>
         ))}
       </S.WeekdayRow>
@@ -45,20 +41,17 @@ export default function Calendar({
       <S.DaysGrid>
         {days.map((week, weekIndex) => (
           <S.WeekRow key={weekIndex}>
-            {week.map((day, dayIndex) => {
-              const streakPos = getStreakPosition(week, dayIndex);
-              return (
-                <S.DayCellWrapper key={dayIndex} streakPosition={streakPos}>
-                  <S.DayCell status={day.status}>
-                    {day.status === 'streak' && (
-                      <S.StreakIcon>
-                        <Image src="/icons/fire.svg" alt="Streak" width={17} height={17} />
-                      </S.StreakIcon>
-                    )}
-                  </S.DayCell>
-                </S.DayCellWrapper>
-              );
-            })}
+            {week.map((day, dayIndex) => (
+              <S.DayCellWrapper key={dayIndex} streakPosition={getStreakPosition(week, dayIndex)}>
+                <S.DayCell status={day.status} isToday={day.isToday}>
+                  {day.status === 'streak' && (
+                    <S.StreakIcon>
+                      <Image src="/icons/fire.svg" alt="Streak" width={17} height={17} />
+                    </S.StreakIcon>
+                  )}
+                </S.DayCell>
+              </S.DayCellWrapper>
+            ))}
           </S.WeekRow>
         ))}
       </S.DaysGrid>

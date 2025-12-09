@@ -169,7 +169,7 @@ export const DayCellWrapper = styled.div<{ streakPosition: StreakPosition }>`
   `}
 `;
 
-export const DayCell = styled.div<{ status: DayStatus }>`
+export const DayCell = styled.div<{ status: DayStatus; isToday?: boolean }>`
   width: 23px;
   height: 23px;
   border-radius: 50%;
@@ -179,6 +179,9 @@ export const DayCell = styled.div<{ status: DayStatus }>`
   position: relative;
   z-index: 1;
   ${({ status }) => getDayStatusStyles(status)}
+  ${({ isToday }) => isToday && css`
+    box-shadow: 0 0 0 2px #f35151;
+  `}
 `;
 
 export const StreakIcon = styled.div`
