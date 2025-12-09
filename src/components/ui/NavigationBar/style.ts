@@ -34,6 +34,7 @@ export const MenuWrapper = styled.div`
   height: 100%;
   padding: 0 1rem;
   position: relative;
+  transform: translateY(-0.5rem);
 `;
 
 export const MenuItem = styled.div`
@@ -78,7 +79,7 @@ export const IconWrapper = styled.div`
 
 export const Label = styled.span`
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 400;
   color: #4a4a4a;
 
   @media (min-width: 768px) {
