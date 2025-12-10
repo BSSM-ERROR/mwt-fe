@@ -18,8 +18,8 @@ export const StaminaIconWrapper = styled.div`
 `;
 
 export const IconWrapper = styled.div`
-  width: 24px;
-  height: 31px;
+  width: 22px;
+  height: 29px;
   display: flex;
   gap: 4px;
   align-items: center;

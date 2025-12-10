@@ -49,6 +49,15 @@ const Container = styled.div`
   }
 `;
 
+const Header = styled.header`
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
 interface RootLayoutProps {
   children: ReactNode;
 }
@@ -67,8 +76,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
   return (
     <Container>
-      <Stamina currentStamina={3} />
-      <Candy count={23} />
+      <Header>
+        <Stamina currentStamina={3} />
+        <Candy count={23} />
+      </Header>
       {isLive2DVisible && <StyledLive2DViewer speaking={false} />}
       {children}
       <NavBar />
