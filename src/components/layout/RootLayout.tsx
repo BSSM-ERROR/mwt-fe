@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import { useLive2DStore } from "@/store/useLive2DStore";
 import NavBar from "@/components/ui/NavigationBar/NavigationBar";
 import Stamina from "../ui/Stamina/Stamina";
+import Candy from "../ui/Candy";
 
 const Live2DViewer = dynamic(
   () => import("@/components/ui/Live2d/Live2DViewer"),
@@ -67,6 +68,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <Container>
       <Stamina currentStamina={3} />
+      <Candy count={23} />
       {isLive2DVisible && <StyledLive2DViewer speaking={false} />}
       {children}
       <NavBar />
