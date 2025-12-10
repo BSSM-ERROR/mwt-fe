@@ -6,6 +6,7 @@ import { ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { useLive2DStore } from "@/store/useLive2DStore";
 import NavBar from "@/components/ui/NavigationBar/NavigationBar";
+import Stamina from "../ui/Stamina/Stamina";
 
 const Live2DViewer = dynamic(
   () => import("@/components/ui/Live2d/Live2DViewer"),
@@ -65,9 +66,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
   return (
     <Container>
-      {isLive2DVisible && <StyledLive2DViewer speaking={true} />}
+      <Stamina currentStamina={3} />
+      {isLive2DVisible && <StyledLive2DViewer speaking={false} />}
       {children}
-      <NavBar></NavBar>
+      <NavBar />
     </Container>
   );
 }

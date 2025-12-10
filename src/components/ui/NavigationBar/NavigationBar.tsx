@@ -39,7 +39,11 @@ const NavBar = () => {
                     alt={item.label}
                     width={40}
                     height={40}
-                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain",
+                    }}
                   />
                 </S.IconWrapper>
                 <S.Label isActive={isActive}>{item.label}</S.Label>
