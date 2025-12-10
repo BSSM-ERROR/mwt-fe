@@ -77,10 +77,10 @@ export const IconWrapper = styled.div`
   }
 `;
 
-export const Label = styled.span`
+export const Label = styled.span<{ isActive?: boolean }>`
   font-size: 0.75rem;
   font-weight: 400;
-  color: #4a4a4a;
+  color: ${({ isActive }) => (isActive ? "#F35151" : "#4a4a4a")};
 
   @media (min-width: 768px) {
     font-size: 1rem;
