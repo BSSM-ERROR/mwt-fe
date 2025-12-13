@@ -13,7 +13,7 @@ const NavBar = () => {
   };
 
   const getIconPath = (iconName: string, path: string) => {
-    const isActive = pathname === path;
+    const isActive = pathname.startsWith(path);
     const folder = isActive ? "clicked" : "default";
     return `/icons/menu/${folder}/${iconName}`;
   };
