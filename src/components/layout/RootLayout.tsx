@@ -3,12 +3,18 @@
 import styled from "@emotion/styled";
 import { ReactNode } from "react";
 
-import dynamic from 'next/dynamic';
-import { useLive2DStore } from '@/store/useLive2DStore';
+import dynamic from "next/dynamic";
+import { useLive2DStore } from "@/store/useLive2DStore";
+import NavBar from "@/components/ui/NavigationBar/NavigationBar";
+import Stamina from "../ui/Stamina/Stamina";
+import Candy from "../ui/Candy";
 
-const Live2DViewer = dynamic(() => import('@/components/ui/Live2d/Live2DViewer'), {
-  ssr: false,
-});
+const Live2DViewer = dynamic(
+  () => import("@/components/ui/Live2d/Live2DViewer"),
+  {
+    ssr: false,
+  }
+);
 
 const Container = styled.div`
   max-width: 600px;
@@ -23,13 +29,13 @@ const Container = styled.div`
   overflow: hidden;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: -20px;
     left: -20px;
     right: -20px;
     bottom: -20px;
-    background-image: url('/assets/background.png');
+    background-image: url("/assets/background.png");
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -41,6 +47,15 @@ const Container = styled.div`
     position: relative;
     z-index: 1;
   }
+`;
+
+const Header = styled.header`
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 `;
 
 interface RootLayoutProps {
@@ -61,8 +76,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
   return (
     <Container>
-      {isLive2DVisible && <StyledLive2DViewer speaking={true} />}
+      <Header>
+        <Stamina />
+        <Candy />
+      </Header>
+      {isLive2DVisible && <StyledLive2DViewer speaking={false} />}
       {children}
+      <NavBar />
     </Container>
   );
-};
+}
