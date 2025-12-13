@@ -2,6 +2,7 @@
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import * as S from "./style";
+import { menuItems } from "@/constants/menuItems";
 
 const NavBar = () => {
   const router = useRouter();
@@ -10,13 +11,6 @@ const NavBar = () => {
   const handleChatClick = () => {
     router.push("/chat");
   };
-
-  const menuItems = [
-    { iconName: "home.svg", label: "Home", path: "/" },
-    { iconName: "streak.svg", label: "Streak", path: "/streak" },
-    { iconName: "trophy.svg", label: "Mission", path: "/mission" },
-    { iconName: "profile.svg", label: "Profile", path: "/profile" },
-  ];
 
   const getIconPath = (iconName: string, path: string) => {
     const isActive = pathname === path;
