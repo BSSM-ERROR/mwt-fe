@@ -77,8 +77,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <Container>
       <Header>
-        <Stamina currentStamina={3} />
-        <Candy count={23} />
+        <Stamina />
+        <Candy />
       </Header>
       {isLive2DVisible && <StyledLive2DViewer speaking={false} />}
       {children}
