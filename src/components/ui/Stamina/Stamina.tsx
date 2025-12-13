@@ -2,14 +2,11 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import * as S from "./style";
-import { StaminaProps } from "@/types/stamina";
+import { useStaminaStore } from "@/store/useStaminaStore";
 
-const Stamina = ({
-  currentStamina = 5,
-  maxStamina = 5,
-  nextRecoveryTime,
-}: StaminaProps) => {
+const Stamina = () => {
   const [timeRemaining, setTimeRemaining] = useState<string>("");
+  const { currentStamina, maxStamina, nextRecoveryTime } = useStaminaStore();
 
   useEffect(() => {
     if (!nextRecoveryTime || currentStamina >= maxStamina) {

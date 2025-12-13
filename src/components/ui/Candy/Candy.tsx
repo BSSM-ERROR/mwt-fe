@@ -1,12 +1,10 @@
 "use client";
 import Image from "next/image";
 import * as S from "./style";
+import { useCandyStore } from "@/store/useCandyStore";
 
-type CandyProps = {
-  count?: number;
-};
-
-const Candy = ({ count = 0 }: CandyProps) => {
+const Candy = () => {
+  const count = useCandyStore((state) => state.count);
   return (
     <S.Container>
       <S.IconWrapper>
