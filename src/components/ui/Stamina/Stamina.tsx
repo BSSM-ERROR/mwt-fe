@@ -2,12 +2,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import * as S from "./style";
-
-type StaminaProps = {
-  currentStamina?: number;
-  maxStamina?: number;
-  nextRecoveryTime?: Date;
-};
+import { StaminaProps } from "@/types/stamina";
 
 const Stamina = ({
   currentStamina = 5,
