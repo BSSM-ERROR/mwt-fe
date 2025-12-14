@@ -87,12 +87,9 @@ export default function ChatContainer() {
       console.log("[ChatContainer] User transcription received:", data.text);
       setMessages((prev) => {
         const updatedMessages = [...prev];
-        // 뒤에서부터 "Processing..."인 사용자 메시지를 찾아서 업데이트
+        // 뒤에서부터 빈 텍스트인 사용자 메시지를 찾아서 업데이트
         for (let i = updatedMessages.length - 1; i >= 0; i--) {
-          if (
-            !updatedMessages[i].isAI &&
-            updatedMessages[i].text === "Processing..."
-          ) {
+          if (!updatedMessages[i].isAI && updatedMessages[i].text === "") {
             updatedMessages[i] = {
               ...updatedMessages[i],
               text: data.text,
@@ -163,7 +160,7 @@ export default function ChatContainer() {
           ...prev,
           {
             id: `user-${timestamp}`,
-            text: "Processing...", // 임시 텍스트, transcription 오면 업데이트됨
+            text: "", // 빈 텍스트로 TypingIndicator 표시, transcription 오면 업데이트됨
             isAI: false,
           },
           {

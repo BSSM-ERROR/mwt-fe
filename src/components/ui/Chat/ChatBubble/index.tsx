@@ -16,7 +16,7 @@ export default function ChatBubble({
     onSpeak,
     onTranslate,
 }: ChatBubbleProps) {
-    const isTyping = isAI && message === '';
+    const isTyping = message === '';
 
     return (
         <S.MessageWrapper isAI={isAI}>
