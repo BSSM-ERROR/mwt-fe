@@ -1,11 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { BottomSheet, SelectCard, ChatView, Highlight } from '@/components/ui/Chat';
-import { difficultyLevels, learningMethods } from '@/constants/chat';
-import type { SelectOption, Step } from '@/types/chat';
-import { useSocket } from '@/hooks/useSocket';
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import {
+  BottomSheet,
+  SelectCard,
+  ChatView,
+  Highlight,
+} from "@/components/ui/Chat";
+import { difficultyLevels, learningMethods } from "@/constants/chat";
+import type { SelectOption, Step } from "@/types/chat";
+import { useSocket } from "@/hooks/useSocket";
 
 interface Message {
   id: string;
@@ -15,16 +20,24 @@ interface Message {
 
 export default function ChatContainer() {
   const router = useRouter();
-  const [step, setStep] = useState<Step>('level');
+  const [step, setStep] = useState<Step>("level");
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: '1',
+      id: "1",
       text: "Hello! I'm your AI teacher. Click the microphone to talk to me!",
       isAI: true,
     },
   ]);
 
-  const { status, processingStep, sendVoiceMessage, onAudioStream, onResponseComplete, onError } = useSocket();
+  const {
+    status,
+    processingStep,
+    sendVoiceMessage,
+    onAudioStream,
+    onResponseComplete,
+    onUserTranscription,
+    onError,
+  } = useSocket();
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -67,17 +80,39 @@ export default function ChatContainer() {
         playNextAudio();
       }
 
-      console.log('Emotion:', data.emotion);
+      console.log("Emotion:", data.emotion);
+    });
+
+    onUserTranscription((data) => {
+      console.log("[ChatContainer] User transcription received:", data.text);
+      setMessages((prev) => {
+        const updatedMessages = [...prev];
+        // 뒤에서부터 "Processing..."인 사용자 메시지를 찾아서 업데이트
+        for (let i = updatedMessages.length - 1; i >= 0; i--) {
+          if (
+            !updatedMessages[i].isAI &&
+            updatedMessages[i].text === "Processing..."
+          ) {
+            updatedMessages[i] = {
+              ...updatedMessages[i],
+              text: data.text,
+            };
+            break;
+          }
+        }
+        return updatedMessages;
+      });
     });
 
     onResponseComplete((data) => {
-      console.log('Full response received:', data.fullText);
+      console.log("[ChatContainer] Full response received:", data.fullText);
+      console.log("[ChatContainer] Response data:", data);
     });
 
     onError((data) => {
-      alert('Error: ' + data.message);
+      alert("Error: " + data.message);
     });
-  }, [onAudioStream, onResponseComplete, onError]);
+  }, [onAudioStream, onUserTranscription, onResponseComplete, onError]);
 
   const playNextAudio = () => {
     if (audioQueueRef.current.length === 0) {
@@ -96,7 +131,7 @@ export default function ChatContainer() {
     };
 
     audio.play().catch((e) => {
-      console.error('Audio play failed:', e);
+      console.error("Audio play failed:", e);
       playNextAudio();
     });
   };
@@ -112,19 +147,28 @@ export default function ChatContainer() {
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: "audio/webm",
+        });
         if (audioBlob.size < 1000) {
-          console.warn('Audio too short, ignoring');
+          console.warn("Audio too short, ignoring");
           audioChunksRef.current = [];
           return;
         }
 
-        // 빈 AI 메시지 추가 (스트림으로 채워질 예정)
+        const timestamp = Date.now();
+
+        // 사용자 메시지와 빈 AI 메시지 추가
         setMessages((prev) => [
           ...prev,
           {
-            id: `ai-${Date.now()}`,
-            text: '',
+            id: `user-${timestamp}`,
+            text: "Processing...", // 임시 텍스트, transcription 오면 업데이트됨
+            isAI: false,
+          },
+          {
+            id: `ai-${timestamp}`,
+            text: "",
             isAI: true,
           },
         ]);
@@ -133,7 +177,7 @@ export default function ChatContainer() {
         audioChunksRef.current = [];
       };
     } catch (err) {
-      console.error('Microphone access denied:', err);
+      console.error("Microphone access denied:", err);
     }
   };
 
@@ -142,13 +186,13 @@ export default function ChatContainer() {
   };
 
   const handleSelectLevel = (level: SelectOption) => {
-    console.log('Selected level:', level);
-    setStep('method');
+    console.log("Selected level:", level);
+    setStep("method");
   };
 
   const handleSelectMethod = (method: SelectOption) => {
-    console.log('Selected method:', method);
-    setStep('chat');
+    console.log("Selected method:", method);
+    setStep("chat");
   };
 
   const handleMicClick = () => {
@@ -165,16 +209,16 @@ export default function ChatContainer() {
   };
 
   const handleSpeak = (messageId: string) => {
-    console.log('Speak message:', messageId);
+    console.log("Speak message:", messageId);
   };
 
   const handleTranslate = (messageId: string) => {
-    console.log('Translate message:', messageId);
+    console.log("Translate message:", messageId);
   };
 
   const renderStep = () => {
     switch (step) {
-      case 'chat':
+      case "chat":
         return (
           <ChatView
             messages={messages}
@@ -185,7 +229,7 @@ export default function ChatContainer() {
           />
         );
 
-      case 'method':
+      case "method":
         return (
           <BottomSheet
             isOpen={true}
@@ -208,7 +252,7 @@ export default function ChatContainer() {
           </BottomSheet>
         );
 
-      case 'level':
+      case "level":
       default:
         return (
           <BottomSheet
