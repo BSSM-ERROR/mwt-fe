@@ -16,10 +16,11 @@ export const Wrapper = styled.div`
     right: 0;
     bottom: 0;
     background: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.2),
-      rgba(0, 0, 0, 0.7)
+      200deg,
+      rgba(255, 255, 255, 0) -18%,
+      #000000ff 48.07%
     );
+    opacity: 85%;
     z-index: 0;
   }
 
