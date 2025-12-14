@@ -16,7 +16,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className={theJamsil.className}>
+            <body className={`${theJamsil.variable} ${theJamsil.className}`}>
                 <ReactQueryProvider>
                     <GlobalStyles />
                     <LayoutContainer>

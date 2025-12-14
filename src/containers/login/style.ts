@@ -82,7 +82,7 @@ export const LoginButton = styled.button<{
       case "google":
         return `
           background: white;
-          color: #333;
+          color: #444444ff;
         `;
       case "naver":
         return `
@@ -110,4 +110,6 @@ export const NameWrapper = styled.p`
   display: flex;
   justify-content: center;
   flex: 1 0 0;
+  font-family: var(--font-the-jamsil);
+  font-weight: 500;
 `;
