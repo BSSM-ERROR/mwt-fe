@@ -50,3 +50,17 @@ export const ActionButton = styled.button`
     fill: rgba(255, 255, 255, 0.9);
   }
 `;
+
+export const TypingIndicator = styled.span`
+  display: inline-block;
+  animation: typing 1.5s ease-in-out infinite;
+
+  @keyframes typing {
+    0%, 100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+`;

@@ -12,6 +12,7 @@ interface Message {
 
 interface ChatViewProps {
     messages?: Message[];
+    isRecording?: boolean;
     onMicClick?: () => void;
     onSpeak?: (messageId: string) => void;
     onTranslate?: (messageId: string) => void;
@@ -32,6 +33,7 @@ const defaultMessages: Message[] = [
 
 export default function ChatView({
     messages = defaultMessages,
+    isRecording = false,
     onMicClick,
     onSpeak,
     onTranslate,
@@ -52,7 +54,8 @@ export default function ChatView({
                     ))}
                 </S.MessagesContainer>
                 <S.InputContainer>
-                    <S.MicButton onClick={onMicClick} aria-label="Record voice">
+                    {isRecording && <S.RecordingText>Listening...</S.RecordingText>}
+                    <S.MicButton onClick={onMicClick} aria-label="Record voice" isRecording={isRecording}>
                         <Image src="/icons/mic.svg" alt="mic" width={32} height={32} />
                     </S.MicButton>
                 </S.InputContainer>

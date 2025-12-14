@@ -16,11 +16,13 @@ export default function ChatBubble({
     onSpeak,
     onTranslate,
 }: ChatBubbleProps) {
+    const isTyping = isAI && message === '';
+
     return (
         <S.MessageWrapper isAI={isAI}>
             <S.MessageBubble isAI={isAI}>
-                {message}
-                {isAI && (
+                {isTyping ? <S.TypingIndicator>...</S.TypingIndicator> : message}
+                {isAI && !isTyping && (
                     <S.MessageActions>
                         <S.ActionButton onClick={onSpeak} aria-label="Listen">
                             <Image src="/icons/speaker.svg" alt="speaker" width={20} height={20} />

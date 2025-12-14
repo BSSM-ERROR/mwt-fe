@@ -34,7 +34,25 @@ export const MessagesContainer = styled.div`
 
 export const InputContainer = styled.div`
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   padding: 20px;
   padding-bottom: 40px;
+`;
+
+export const RecordingText = styled.div`
+  color: #FF6B6B;
+  font-size: 16px;
+  font-weight: 600;
+  animation: fadeInOut 1.5s ease-in-out infinite;
+
+  @keyframes fadeInOut {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
 `;
