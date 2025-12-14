@@ -17,7 +17,7 @@ export default function LoginContainer() {
       <S.ButtonWrapper>
         <S.LoginButton
           provider="google"
-          onClick={() => signIn("google", { callbackUrl: "/" })}
+          onClick={() => signIn("google", { callbackUrl: "/home" })}
         >
           <S.IconWrapper>
             <Image
@@ -32,7 +32,7 @@ export default function LoginContainer() {
 
         <S.LoginButton
           provider="naver"
-          onClick={() => signIn("naver", { callbackUrl: "/" })}
+          onClick={() => signIn("naver", { callbackUrl: "/home" })}
         >
           <S.IconWrapper>
             <Image
@@ -47,7 +47,7 @@ export default function LoginContainer() {
 
         <S.LoginButton
           provider="kakao"
-          onClick={() => signIn("kakao", { callbackUrl: "/" })}
+          onClick={() => signIn("kakao", { callbackUrl: "/home" })}
         >
           <S.IconWrapper>
             <Image
