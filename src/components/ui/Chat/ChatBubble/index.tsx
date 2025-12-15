@@ -11,6 +11,19 @@ interface ChatBubbleProps {
     onTranslate?: () => void;
 }
 
+// 괄호로 묶인 시나리오 설명과 본문을 분리하는 함수
+function parseScenarioMessage(message: string) {
+    const scenarioMatch = message.match(/^\(([^)]+)\)\s*/);
+
+    if (scenarioMatch) {
+        const description = scenarioMatch[1]; // 괄호 제거, 내용만
+        const content = message.slice(scenarioMatch[0].length).trim();
+        return { description, content };
+    }
+
+    return { description: null, content: message };
+}
+
 export default function ChatBubble({
     message,
     isAI = false,
@@ -19,11 +32,21 @@ export default function ChatBubble({
     onTranslate,
 }: ChatBubbleProps) {
     const isTyping = message === '';
+    const { description, content } = parseScenarioMessage(message);
 
     return (
         <S.MessageWrapper isAI={isAI}>
             <S.MessageBubble isAI={isAI}>
-                {isTyping ? <S.TypingIndicator>...</S.TypingIndicator> : message}
+                {isTyping ? (
+                    <S.TypingIndicator>...</S.TypingIndicator>
+                ) : (
+                    <>
+                        {description && isAI && (
+                            <S.ScenarioDescription>{description}</S.ScenarioDescription>
+                        )}
+                        <S.MessageContent>{content}</S.MessageContent>
+                    </>
+                )}
                 {isAI && !isTyping && (
                     <S.MessageActions>
                         <S.ActionButton
