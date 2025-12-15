@@ -1,5 +1,5 @@
-import styled from '@emotion/styled';
-import { css } from '@emotion/react';
+import styled from "@emotion/styled";
+import { css } from "@emotion/react";
 
 export const frostedGlass = css`
   backdrop-filter: blur(10px);
@@ -45,7 +45,7 @@ export const MicButton = styled.button<{ isRecording?: boolean }>`
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: ${({ isRecording }) => isRecording ? '#FF6B6B' : '#F35151'};
+  background: ${({ isRecording }) => (isRecording ? "#FF6B6B" : "#F35151")};
   border: none;
   cursor: pointer;
   display: flex;
@@ -53,18 +53,21 @@ export const MicButton = styled.button<{ isRecording?: boolean }>`
   justify-content: center;
   box-shadow: ${({ isRecording }) =>
     isRecording
-      ? '0 0 0 4px rgba(255, 107, 107, 0.3), 0 4px 12px rgba(255, 107, 107, 0.4)'
-      : '0 4px 12px rgba(243, 81, 81, 0.4)'
-  };
+      ? "0 0 0 4px rgba(255, 107, 107, 0.3), 0 4px 12px rgba(255, 107, 107, 0.4)"
+      : "0 4px 12px rgba(243, 81, 81, 0.4)"};
   transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
-  animation: ${({ isRecording }) => isRecording ? 'pulse 1.5s ease-in-out infinite' : 'none'};
+  animation: ${({ isRecording }) =>
+    isRecording ? "pulse 1.5s ease-in-out infinite" : "none"};
 
   @keyframes pulse {
-    0%, 100% {
-      box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.3), 0 4px 12px rgba(255, 107, 107, 0.4);
+    0%,
+    100% {
+      box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.3),
+        0 4px 12px rgba(255, 107, 107, 0.4);
     }
     50% {
-      box-shadow: 0 0 0 8px rgba(255, 107, 107, 0.2), 0 4px 16px rgba(255, 107, 107, 0.6);
+      box-shadow: 0 0 0 8px rgba(255, 107, 107, 0.2),
+        0 4px 16px rgba(255, 107, 107, 0.6);
     }
   }
 
@@ -72,9 +75,8 @@ export const MicButton = styled.button<{ isRecording?: boolean }>`
     transform: scale(1.05);
     box-shadow: ${({ isRecording }) =>
       isRecording
-        ? '0 0 0 4px rgba(255, 107, 107, 0.3), 0 6px 16px rgba(255, 107, 107, 0.5)'
-        : '0 6px 16px rgba(243, 81, 81, 0.5)'
-    };
+        ? "0 0 0 4px rgba(255, 107, 107, 0.3), 0 6px 16px rgba(255, 107, 107, 0.5)"
+        : "0 6px 16px rgba(243, 81, 81, 0.5)"};
   }
 
   &:active {
@@ -84,6 +86,6 @@ export const MicButton = styled.button<{ isRecording?: boolean }>`
   svg {
     width: 28px;
     height: 28px;
-    fill: #FFFFFF;
+    fill: #ffffff;
   }
 `;
