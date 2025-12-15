@@ -14,14 +14,30 @@ interface ChatBubbleProps {
 // 괄호로 묶인 시나리오 설명과 본문을 분리하는 함수
 function parseScenarioMessage(message: string) {
     const scenarioMatch = message.match(/^\(([^)]+)\)\s*/);
+    let description: string | null = null;
+    let remainingText = message;
 
     if (scenarioMatch) {
-        const description = scenarioMatch[1]; // 괄호 제거, 내용만
-        const content = message.slice(scenarioMatch[0].length).trim();
-        return { description, content };
+        description = scenarioMatch[1]; // 괄호 제거, 내용만
+        remainingText = message.slice(scenarioMatch[0].length).trim();
     }
 
-    return { description: null, content: message };
+    // Q. 부분 분리
+    const questionMatch = remainingText.match(/^(.*?)(Q\..*)$/s);
+
+    if (questionMatch) {
+        const beforeQuestion = questionMatch[1].trim();
+        const questionPart = questionMatch[2].trim();
+
+        return {
+            description,
+            beforeQuestion: beforeQuestion || null,
+            question: questionPart,
+            content: null
+        };
+    }
+
+    return { description, beforeQuestion: null, question: null, content: remainingText };
 }
 
 export default function ChatBubble({
@@ -32,7 +48,7 @@ export default function ChatBubble({
     onTranslate,
 }: ChatBubbleProps) {
     const isTyping = message === '';
-    const { description, content } = parseScenarioMessage(message);
+    const { description, beforeQuestion, question, content } = parseScenarioMessage(message);
 
     return (
         <S.MessageWrapper isAI={isAI}>
@@ -44,7 +60,15 @@ export default function ChatBubble({
                         {description && isAI && (
                             <S.ScenarioDescription>{description}</S.ScenarioDescription>
                         )}
-                        <S.MessageContent>{content}</S.MessageContent>
+                        {beforeQuestion && (
+                            <S.MessageContent>{beforeQuestion}</S.MessageContent>
+                        )}
+                        {question && (
+                            <S.QuestionText>{question}</S.QuestionText>
+                        )}
+                        {content && !question && (
+                            <S.MessageContent>{content}</S.MessageContent>
+                        )}
                     </>
                 )}
                 {isAI && !isTyping && (

@@ -79,6 +79,12 @@ export const ScenarioDescription = styled.span`
   margin-bottom: 8px;
 `;
 
+export const QuestionText = styled.span`
+  display: block;
+  font-weight: 700;
+  margin-top: 8px;
+`;
+
 export const MessageContent = styled.span`
   display: block;
 `;
