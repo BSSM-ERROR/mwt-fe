@@ -80,7 +80,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <Stamina />
         <Candy />
       </Header>
-      {isLive2DVisible && <StyledLive2DViewer speaking={false} />}
+      {isLive2DVisible && <StyledLive2DViewer />}
       {children}
       <NavBar />
     </Container>

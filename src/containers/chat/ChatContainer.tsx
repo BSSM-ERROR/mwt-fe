@@ -11,6 +11,7 @@ import {
 import { difficultyLevels, learningMethods } from "@/constants/chat";
 import type { SelectOption, Step } from "@/types/chat";
 import { useSocket } from "@/hooks/useSocket";
+import { useLive2DStore, type LipSyncFrame } from "@/store/useLive2DStore";
 
 interface Message {
   id: string;
@@ -47,6 +48,11 @@ export default function ChatContainer() {
   const isPlayingRef = useRef(false);
   const [isRecording, setIsRecording] = useState(false);
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
+
+  const setSpeaking = useLive2DStore((state) => state.setSpeaking);
+  const setLipSyncData = useLive2DStore((state) => state.setLipSyncData);
+  const setStartTime = useLive2DStore((state) => state.setStartTime);
+  const stopSpeaking = useLive2DStore((state) => state.stopSpeaking);
 
   useEffect(() => {
     setupRecording();
@@ -111,22 +117,40 @@ export default function ChatContainer() {
 
     onTtsResponse((data) => {
       console.log("[ChatContainer] TTS response received:", data);
+
+      // 립싱크 데이터 설정
+      if (data.lipSyncData && Array.isArray(data.lipSyncData)) {
+        console.log("[ChatContainer] Setting lip sync data:", data.lipSyncData);
+        setLipSyncData(data.lipSyncData as LipSyncFrame[]);
+      } else {
+        setLipSyncData(null);
+      }
+
       // base64 오디오를 재생
       const audio = new Audio(data.audioUrl);
+
+      audio.onloadedmetadata = () => {
+        // 오디오 재생 시작 시간 기록
+        setSpeaking(true);
+        setStartTime(performance.now());
+      };
 
       audio.onended = () => {
         console.log("TTS audio playback ended");
         setPlayingMessageId(null);
+        stopSpeaking();
       };
 
       audio.onerror = () => {
         console.error("TTS audio playback error");
         setPlayingMessageId(null);
+        stopSpeaking();
       };
 
       audio.play().catch((e) => {
         console.error("TTS audio play failed:", e);
         setPlayingMessageId(null);
+        stopSpeaking();
       });
     });
 
@@ -138,6 +162,7 @@ export default function ChatContainer() {
   const playNextAudio = () => {
     if (audioQueueRef.current.length === 0) {
       isPlayingRef.current = false;
+      stopSpeaking(); // 모든 오디오 재생 완료
       return;
     }
 
@@ -147,7 +172,19 @@ export default function ChatContainer() {
 
     const audio = new Audio(audioUrl);
 
+    audio.onloadedmetadata = () => {
+      // AI 응답 스트리밍 시작 시 립싱크 활성화 (기본 애니메이션)
+      setSpeaking(true);
+      setStartTime(performance.now());
+      setLipSyncData(null); // 스트리밍에는 정확한 립싱크 데이터가 없으므로 기본 애니메이션 사용
+    };
+
     audio.onended = () => {
+      playNextAudio();
+    };
+
+    audio.onerror = () => {
+      console.error("Audio play failed");
       playNextAudio();
     };
 

@@ -1,22 +1,50 @@
 import { useEffect, useRef, useState } from "react";
 import * as S from "./style";
+import { useLive2DStore } from "@/store/useLive2DStore";
 
 const MODEL_PATH = "/assets/live2d/MyWaifuTeacher/4.model3.json";
 const CUBISM_CORE_SRC = "/assets/live2d/live2dcubismcore.min.js";
 
-type Props = {
-  className?: string;
-  speaking?: boolean;
+// phoneme을 Live2D mouth open 값으로 변환
+const phonemeToMouthValue = (phoneme: string): number => {
+  switch (phoneme.toUpperCase()) {
+    case 'A': return 1.0;   // 크게 벌림
+    case 'E': return 0.6;   // 중간 정도
+    case 'I': return 0.3;   // 살짝 벌림
+    case 'O': return 0.9;   // 둥글게 크게
+    case 'U': return 0.5;   // 오므림
+    case 'M': return 0.0;   // 입 닫음
+    case 'F': return 0.4;   // 약간 열림
+    case 'S': return 0.3;   // 약간 열림
+    case 'T': return 0.3;   // 약간 열림
+    case 'R': return 0.5;   // 중간 정도
+    case 'W': return 0.6;   // 중간 정도
+    case 'K': return 0.4;   // 중간 정도
+    default: return 0.0;    // 기본값 (입 닫음)
+  }
 };
 
-export default function Live2DViewer({ className, speaking = false }: Props) {
+type Props = {
+  className?: string;
+};
+
+export default function Live2DViewer({ className }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const speaking = useLive2DStore((state) => state.speaking);
+  const lipSyncData = useLive2DStore((state) => state.lipSyncData);
+  const startTime = useLive2DStore((state) => state.startTime);
+
   const speakingRef = useRef(speaking);
+  const lipSyncDataRef = useRef(lipSyncData);
+  const startTimeRef = useRef(startTime);
 
   useEffect(() => {
     speakingRef.current = speaking;
-  }, [speaking]);
+    lipSyncDataRef.current = lipSyncData;
+    startTimeRef.current = startTime;
+  }, [speaking, lipSyncData, startTime]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -110,6 +138,7 @@ export default function Live2DViewer({ className, speaking = false }: Props) {
         let isDragging = false;
         let isPetting = false;
         let eyeOpenValue = 1;
+        let currentMouthValue = 0; // 부드러운 전환을 위한 현재 입모양 값
 
         model.on("pointerdown", () => {
           isDragging = true;
@@ -161,15 +190,48 @@ export default function Live2DViewer({ className, speaking = false }: Props) {
           } catch (e) { }
 
           if (speakingRef.current) {
-            const time = performance.now();
-            const value = (Math.sin(time * 0.01) + 1) / 2;
+            let targetValue = 0;
+
+            // lipSyncData가 있으면 정확한 립싱크 사용
+            if (lipSyncDataRef.current && startTimeRef.current && Array.isArray(lipSyncDataRef.current)) {
+              const currentTime = (performance.now() - startTimeRef.current) / 1000;
+              const data = lipSyncDataRef.current;
+
+              // 현재 시간에 해당하는 phoneme 찾기
+              let currentPhoneme: string | null = null;
+              for (let i = 0; i < data.length; i++) {
+                if (currentTime >= data[i].startTime && currentTime < data[i].endTime) {
+                  currentPhoneme = data[i].phoneme;
+                  break;
+                }
+              }
+
+              // phoneme에 따라 목표 입모양 설정
+              if (currentPhoneme) {
+                targetValue = phonemeToMouthValue(currentPhoneme);
+              } else {
+                targetValue = 0;
+              }
+            } else {
+              // 기본 사인파 애니메이션
+              const time = performance.now();
+              targetValue = (Math.sin(time * 0.01) + 1) / 2;
+            }
+
+            // 부드러운 전환을 위한 보간
+            const smoothSpeed = 0.3;
+            currentMouthValue += (targetValue - currentMouthValue) * smoothSpeed;
 
             try {
-              coreModel?.setParameterValueById?.('ParamMouthOpenY', value);
+              coreModel?.setParameterValueById?.('ParamMouthOpenY', currentMouthValue);
             } catch (e) { }
           } else {
+            // speaking이 false일 때 입 닫기
+            const smoothSpeed = 0.2;
+            currentMouthValue += (0 - currentMouthValue) * smoothSpeed;
+
             try {
-              coreModel?.setParameterValueById?.('ParamMouthOpenY', 0);
+              coreModel?.setParameterValueById?.('ParamMouthOpenY', currentMouthValue);
             } catch (e) { }
           }
         };
