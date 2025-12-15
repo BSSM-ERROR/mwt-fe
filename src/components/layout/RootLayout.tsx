@@ -8,6 +8,7 @@ import { useLive2DStore } from "@/store/useLive2DStore";
 import NavBar from "@/components/ui/NavigationBar/NavigationBar";
 import Stamina from "../ui/Stamina/Stamina";
 import Candy from "../ui/Candy";
+import { usePathname } from "next/navigation";
 
 const Live2DViewer = dynamic(
   () => import("@/components/ui/Live2d/Live2DViewer"),
@@ -73,16 +74,20 @@ const StyledLive2DViewer = styled(Live2DViewer)`
 
 export default function RootLayout({ children }: RootLayoutProps) {
   const isLive2DVisible = useLive2DStore((state) => state.isVisible);
+  const pathname = usePathname();
 
+  const isLogin = pathname === "/login";
   return (
     <Container>
-      <Header>
-        <Stamina />
-        <Candy />
-      </Header>
-      {isLive2DVisible && <StyledLive2DViewer speaking={false} />}
+      {!isLogin && (
+        <Header>
+          <Stamina />
+          <Candy />
+        </Header>
+      )}
+      {isLive2DVisible && !isLogin && <StyledLive2DViewer speaking={false} />}
       {children}
-      <NavBar />
+      {!isLogin && <NavBar />}
     </Container>
   );
 }

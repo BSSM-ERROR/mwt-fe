@@ -1,21 +1,23 @@
-'use client';
-import * as S from './style';
-import { signIn } from 'next-auth/react';
-import Image from 'next/image';
+"use client";
+import * as S from "./style";
+import { signIn } from "next-auth/react";
+import Image from "next/image";
 
 export default function LoginContainer() {
   return (
     <S.Wrapper>
       <S.Title>
-        My<br />
-        Waifu<br />
+        My
+        <br />
+        Waifu
+        <br />
         Teacher
       </S.Title>
 
       <S.ButtonWrapper>
         <S.LoginButton
           provider="google"
-          onClick={() => signIn('google', { callbackUrl: '/' })}
+          onClick={() => signIn("google", { callbackUrl: "/home" })}
         >
           <S.IconWrapper>
             <Image
@@ -25,12 +27,12 @@ export default function LoginContainer() {
               height={36}
             />
           </S.IconWrapper>
-          구글 계정으로 로그인
+          <S.NameWrapper>구글 계정으로 로그인</S.NameWrapper>
         </S.LoginButton>
 
         <S.LoginButton
           provider="naver"
-          onClick={() => signIn('naver', { callbackUrl: '/' })}
+          onClick={() => signIn("naver", { callbackUrl: "/home" })}
         >
           <S.IconWrapper>
             <Image
@@ -40,12 +42,12 @@ export default function LoginContainer() {
               height={24}
             />
           </S.IconWrapper>
-          네이버 계정으로 로그인
+          <S.NameWrapper>네이버 계정으로 로그인</S.NameWrapper>
         </S.LoginButton>
 
         <S.LoginButton
           provider="kakao"
-          onClick={() => signIn('kakao', { callbackUrl: '/' })}
+          onClick={() => signIn("kakao", { callbackUrl: "/home" })}
         >
           <S.IconWrapper>
             <Image
@@ -55,7 +57,7 @@ export default function LoginContainer() {
               height={24}
             />
           </S.IconWrapper>
-          카카오톡 계정으로 로그인
+          <S.NameWrapper>카카오톡 계정으로 로그인</S.NameWrapper>
         </S.LoginButton>
       </S.ButtonWrapper>
     </S.Wrapper>
