@@ -44,3 +44,10 @@ export function parseMultipleChoiceOptions(text: string): QuizOption[] {
 
   return options;
 }
+
+// 객관식 선택지 부분 제거 (질문만 남김)
+export function removeMultipleChoiceOptions(text: string): string {
+  // A)로 시작하는 부분부터 끝까지 제거
+  const questionOnly = text.replace(/\s*A\)[\s\S]*$/, '');
+  return questionOnly.trim();
+}

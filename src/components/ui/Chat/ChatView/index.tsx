@@ -5,6 +5,7 @@ import ChatBubble from '../ChatBubble';
 import QuizOptions from '../QuizOptions';
 import * as S from './style';
 import type { QuizType, QuizOption } from '@/utils/quizParser';
+import { removeMultipleChoiceOptions } from '@/utils/quizParser';
 
 interface Message {
     id: string;
@@ -50,21 +51,34 @@ export default function ChatView({
     onTranslate,
     onQuizOptionSelect,
 }: ChatViewProps) {
+    // 마지막 AI 메시지 인덱스 찾기
+    const lastAIMessageIndex = messages.length > 0
+        ? messages.map((m, idx) => m.isAI ? idx : -1).filter(idx => idx !== -1).pop()
+        : -1;
+
     return (
         <S.Overlay>
             <S.Container>
                 <S.Handle />
                 <S.MessagesContainer>
-                    {messages.map((message) => (
-                        <ChatBubble
-                            key={message.id}
-                            message={message.text}
-                            isAI={message.isAI}
-                            isPlaying={playingMessageId === message.id}
-                            onSpeak={() => onSpeak?.(message.id)}
-                            onTranslate={() => onTranslate?.(message.id)}
-                        />
-                    ))}
+                    {messages.map((message, index) => {
+                        // 마지막 AI 메시지이고 객관식 문제일 때 선택지 제거
+                        const isLastAIMessage = index === lastAIMessageIndex;
+                        const displayText = isLastAIMessage && quizType === 'multiple-choice'
+                            ? removeMultipleChoiceOptions(message.text)
+                            : message.text;
+
+                        return (
+                            <ChatBubble
+                                key={message.id}
+                                message={displayText}
+                                isAI={message.isAI}
+                                isPlaying={playingMessageId === message.id}
+                                onSpeak={() => onSpeak?.(message.id)}
+                                onTranslate={() => onTranslate?.(message.id)}
+                            />
+                        );
+                    })}
                     {quizType === 'multiple-choice' && quizOptions.length > 0 && (
                         <QuizOptions
                             options={quizOptions}

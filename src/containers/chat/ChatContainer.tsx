@@ -12,7 +12,12 @@ import { difficultyLevels, learningMethods } from "@/constants/chat";
 import type { SelectOption, Step } from "@/types/chat";
 import { useSocket } from "@/hooks/useSocket";
 import { useLive2DStore, type LipSyncFrame } from "@/store/useLive2DStore";
-import { detectQuizType, parseMultipleChoiceOptions, type QuizType, type QuizOption } from "@/utils/quizParser";
+import {
+  detectQuizType,
+  parseMultipleChoiceOptions,
+  type QuizType,
+  type QuizOption,
+} from "@/utils/quizParser";
 import * as S from "./style";
 
 interface Message {
@@ -31,7 +36,9 @@ export default function ChatContainer() {
     useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentQuizType, setCurrentQuizType] = useState<QuizType>(null);
-  const [currentQuizOptions, setCurrentQuizOptions] = useState<QuizOption[]>([]);
+  const [currentQuizOptions, setCurrentQuizOptions] = useState<QuizOption[]>(
+    []
+  );
 
   const {
     status,
@@ -92,28 +99,29 @@ export default function ChatContainer() {
         // 마지막 메시지가 AI 메시지이고 내용이 비어있거나 이미 스트리밍 중이면 업데이트
         if (lastMessage && lastMessage.isAI) {
           const updatedMessages = [...prev];
-          const newText = lastMessage.text + (lastMessage.text ? " " : "") + data.text;
+          const newText =
+            lastMessage.text + (lastMessage.text ? " " : "") + data.text;
           updatedMessages[updatedMessages.length - 1] = {
             ...lastMessage,
             text: newText,
           };
 
           // Quiz 모드일 때 문제 유형 감지
-          if (selectedMethod === 'quiz') {
+          if (selectedMethod === "quiz") {
             const quizType = detectQuizType(newText);
 
-            if (quizType === 'multiple-choice') {
-              console.log('[ChatContainer] Detected multiple-choice question');
-              setCurrentQuizType('multiple-choice');
+            if (quizType === "multiple-choice") {
+              console.log("[ChatContainer] Detected multiple-choice question");
+              setCurrentQuizType("multiple-choice");
               const options = parseMultipleChoiceOptions(newText);
               setCurrentQuizOptions(options);
-            } else if (quizType === 'fill-in-blank') {
-              console.log('[ChatContainer] Detected fill-in-blank question');
-              setCurrentQuizType('fill-in-blank');
+            } else if (quizType === "fill-in-blank") {
+              console.log("[ChatContainer] Detected fill-in-blank question");
+              setCurrentQuizType("fill-in-blank");
               setCurrentQuizOptions([]);
-            } else if (quizType === 'answer') {
-              console.log('[ChatContainer] Detected answer feedback');
-              setCurrentQuizType('answer');
+            } else if (quizType === "answer") {
+              console.log("[ChatContainer] Detected answer feedback");
+              setCurrentQuizType("answer");
               setCurrentQuizOptions([]);
             }
           }
@@ -417,7 +425,7 @@ export default function ChatContainer() {
     }
 
     // 객관식 문제일 때 마이크 비활성화
-    if (currentQuizType === 'multiple-choice') {
+    if (currentQuizType === "multiple-choice") {
       console.log("[ChatContainer] Mic disabled: multiple-choice question");
       return;
     }
@@ -488,7 +496,9 @@ export default function ChatContainer() {
           <ChatView
             messages={messages}
             isRecording={isRecording}
-            isMicDisabled={isWaitingForScenarioStart || currentQuizType === 'multiple-choice'}
+            isMicDisabled={
+              isWaitingForScenarioStart || currentQuizType === "multiple-choice"
+            }
             playingMessageId={playingMessageId}
             quizType={currentQuizType}
             quizOptions={currentQuizOptions}
