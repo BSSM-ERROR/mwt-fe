@@ -26,7 +26,8 @@ export default function ChatContainer() {
   const [selectedLevel, setSelectedLevel] = useState<string>("");
   const [selectedMethod, setSelectedMethod] = useState<string>("");
   const [scenarioInput, setScenarioInput] = useState<string>("");
-  const [isWaitingForScenarioStart, setIsWaitingForScenarioStart] = useState(false);
+  const [isWaitingForScenarioStart, setIsWaitingForScenarioStart] =
+    useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
 
   const {
@@ -64,8 +65,13 @@ export default function ChatContainer() {
       console.log("[ChatContainer] Session config updated:", data.config);
 
       // 시나리오 모드일 때 백엔드 응답 대기 상태 해제
-      if (data.config.learningMode === 'scenario' && isWaitingForScenarioStart) {
-        console.log("[ChatContainer] Scenario config confirmed, waiting for AI response");
+      if (
+        data.config.learningMode === "scenario" ||
+        (data.config.learningMode === "quiz" && isWaitingForScenarioStart)
+      ) {
+        console.log(
+          "[ChatContainer] Scenario config confirmed, waiting for AI response"
+        );
       }
     });
 
@@ -84,7 +90,7 @@ export default function ChatContainer() {
           const updatedMessages = [...prev];
           updatedMessages[updatedMessages.length - 1] = {
             ...lastMessage,
-            text: lastMessage.text + (lastMessage.text ? ' ' : '') + data.text,
+            text: lastMessage.text + (lastMessage.text ? " " : "") + data.text,
           };
           return updatedMessages;
         }
@@ -176,11 +182,18 @@ export default function ChatContainer() {
 
       // 에러 발생 시 마지막 빈 메시지들 제거 (처리 중이던 메시지)
       setMessages((prev) => {
-        const filtered = prev.filter(msg => msg.text !== "");
+        const filtered = prev.filter((msg) => msg.text !== "");
         return filtered;
       });
     });
-  }, [onAudioStream, onUserTranscription, onResponseComplete, onTtsResponse, onSessionConfigUpdated, onError]);
+  }, [
+    onAudioStream,
+    onUserTranscription,
+    onResponseComplete,
+    onTtsResponse,
+    onSessionConfigUpdated,
+    onError,
+  ]);
 
   const playNextAudio = () => {
     if (audioQueueRef.current.length === 0) {
@@ -284,10 +297,33 @@ export default function ChatContainer() {
     setSelectedMethod(method.id);
 
     // scenario 모드 선택 시 시나리오 입력 단계로 이동
-    if (method.id === 'scenario') {
+    if (method.id === "scenario") {
       setStep("scenario");
+    } else if (method.id === "quiz") {
+      // quiz 모드도 백엔드 응답 대기
+      setMessages([
+        {
+          id: `ai-waiting-${Date.now()}`,
+          text: "",
+          isAI: true,
+        },
+      ]);
+
+      setIsWaitingForScenarioStart(true);
+
+      if (selectedLevel && method.id) {
+        setSessionConfig({
+          difficulty: selectedLevel as
+            | "beginner"
+            | "elementary"
+            | "intermediate"
+            | "advanced",
+          learningMode: method.id as "free-talking" | "scenario" | "quiz",
+        });
+      }
+      setStep("chat");
     } else {
-      // 다른 모드는 기본 메시지 표시 후 채팅 시작
+      // free-talking 모드만 기본 메시지 표시
       setMessages([
         {
           id: "1",
@@ -298,8 +334,12 @@ export default function ChatContainer() {
 
       if (selectedLevel && method.id) {
         setSessionConfig({
-          difficulty: selectedLevel as 'beginner' | 'elementary' | 'intermediate' | 'advanced',
-          learningMode: method.id as 'free-talking' | 'scenario' | 'quiz',
+          difficulty: selectedLevel as
+            | "beginner"
+            | "elementary"
+            | "intermediate"
+            | "advanced",
+          learningMode: method.id as "free-talking" | "scenario" | "quiz",
         });
       }
       setStep("chat");
@@ -327,8 +367,12 @@ export default function ChatContainer() {
     // scenario와 함께 설정 전송
     if (selectedLevel && selectedMethod) {
       setSessionConfig({
-        difficulty: selectedLevel as 'beginner' | 'elementary' | 'intermediate' | 'advanced',
-        learningMode: selectedMethod as 'free-talking' | 'scenario' | 'quiz',
+        difficulty: selectedLevel as
+          | "beginner"
+          | "elementary"
+          | "intermediate"
+          | "advanced",
+        learningMode: selectedMethod as "free-talking" | "scenario" | "quiz",
         scenario: scenarioInput.trim(),
       });
       console.log("Scenario submitted:", scenarioInput);
