@@ -12,6 +12,7 @@ import { difficultyLevels, learningMethods } from "@/constants/chat";
 import type { SelectOption, Step } from "@/types/chat";
 import { useSocket } from "@/hooks/useSocket";
 import { useLive2DStore, type LipSyncFrame } from "@/store/useLive2DStore";
+import * as S from "./style";
 
 interface Message {
   id: string;
@@ -403,49 +404,19 @@ export default function ChatContainer() {
               </>
             }
           >
-            <div style={{ padding: '20px 0' }}>
-              <textarea
+            <S.ScenarioInputContainer>
+              <S.ScenarioTextarea
                 value={scenarioInput}
                 onChange={(e) => setScenarioInput(e.target.value)}
                 placeholder="예: 카페에서 커피 주문하기, 공항에서 체크인하기, 면접 보기 등"
-                style={{
-                  width: '100%',
-                  minHeight: '120px',
-                  padding: '16px',
-                  fontSize: '16px',
-                  border: '2px solid #e0e0e0',
-                  borderRadius: '12px',
-                  resize: 'vertical',
-                  fontFamily: 'inherit',
-                  outline: 'none',
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#007AFF';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = '#e0e0e0';
-                }}
               />
-              <button
+              <S.ScenarioSubmitButton
                 onClick={handleScenarioSubmit}
-                style={{
-                  width: '100%',
-                  marginTop: '16px',
-                  padding: '16px',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  backgroundColor: scenarioInput.trim() ? '#007AFF' : '#e0e0e0',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '12px',
-                  cursor: scenarioInput.trim() ? 'pointer' : 'not-allowed',
-                  transition: 'all 0.2s',
-                }}
                 disabled={!scenarioInput.trim()}
               >
                 시작하기
-              </button>
-            </div>
+              </S.ScenarioSubmitButton>
+            </S.ScenarioInputContainer>
           </BottomSheet>
         );
 
