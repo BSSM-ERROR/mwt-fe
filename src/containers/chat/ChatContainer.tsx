@@ -22,23 +22,23 @@ interface Message {
 export default function ChatContainer() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("level");
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      text: "Hello! I'm your AI teacher. Click the microphone to talk to me!",
-      isAI: true,
-    },
-  ]);
+  const [selectedLevel, setSelectedLevel] = useState<string>("");
+  const [selectedMethod, setSelectedMethod] = useState<string>("");
+  const [scenarioInput, setScenarioInput] = useState<string>("");
+  const [isWaitingForScenarioStart, setIsWaitingForScenarioStart] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const {
     status,
     processingStep,
     sendVoiceMessage,
     generateTts,
+    setSessionConfig,
     onAudioStream,
     onResponseComplete,
     onUserTranscription,
     onTtsResponse,
+    onSessionConfigUpdated,
     onError,
   } = useSocket();
 
@@ -59,7 +59,22 @@ export default function ChatContainer() {
   }, []);
 
   useEffect(() => {
+    onSessionConfigUpdated((data) => {
+      console.log("[ChatContainer] Session config updated:", data.config);
+
+      // 시나리오 모드일 때 백엔드 응답 대기 상태 해제
+      if (data.config.learningMode === 'scenario' && isWaitingForScenarioStart) {
+        console.log("[ChatContainer] Scenario config confirmed, waiting for AI response");
+      }
+    });
+
     onAudioStream((data) => {
+      // 시나리오 첫 응답이 오면 대기 상태 해제
+      if (isWaitingForScenarioStart) {
+        setIsWaitingForScenarioStart(false);
+        console.log("[ChatContainer] Scenario started, mic enabled");
+      }
+
       setMessages((prev) => {
         const lastMessage = prev[prev.length - 1];
 
@@ -68,7 +83,7 @@ export default function ChatContainer() {
           const updatedMessages = [...prev];
           updatedMessages[updatedMessages.length - 1] = {
             ...lastMessage,
-            text: lastMessage.text + data.text,
+            text: lastMessage.text + (lastMessage.text ? ' ' : '') + data.text,
           };
           return updatedMessages;
         }
@@ -155,9 +170,16 @@ export default function ChatContainer() {
     });
 
     onError((data) => {
+      console.error("[ChatContainer] Error received:", data);
       alert("Error: " + data.message);
+
+      // 에러 발생 시 마지막 빈 메시지들 제거 (처리 중이던 메시지)
+      setMessages((prev) => {
+        const filtered = prev.filter(msg => msg.text !== "");
+        return filtered;
+      });
     });
-  }, [onAudioStream, onUserTranscription, onResponseComplete, onTtsResponse, onError]);
+  }, [onAudioStream, onUserTranscription, onResponseComplete, onTtsResponse, onSessionConfigUpdated, onError]);
 
   const playNextAudio = () => {
     if (audioQueueRef.current.length === 0) {
@@ -208,6 +230,12 @@ export default function ChatContainer() {
         const audioBlob = new Blob(audioChunksRef.current, {
           type: "audio/webm",
         });
+
+        console.log("[ChatContainer] Audio recorded:", {
+          size: audioBlob.size,
+          type: audioBlob.type,
+        });
+
         if (audioBlob.size < 1000) {
           console.warn("Audio too short, ignoring");
           audioChunksRef.current = [];
@@ -231,6 +259,7 @@ export default function ChatContainer() {
           },
         ]);
 
+        console.log("[ChatContainer] Sending voice message to backend");
         sendVoiceMessage(audioBlob);
         audioChunksRef.current = [];
       };
@@ -245,16 +274,76 @@ export default function ChatContainer() {
 
   const handleSelectLevel = (level: SelectOption) => {
     console.log("Selected level:", level);
+    setSelectedLevel(level.id);
     setStep("method");
   };
 
   const handleSelectMethod = (method: SelectOption) => {
     console.log("Selected method:", method);
+    setSelectedMethod(method.id);
+
+    // scenario 모드 선택 시 시나리오 입력 단계로 이동
+    if (method.id === 'scenario') {
+      setStep("scenario");
+    } else {
+      // 다른 모드는 기본 메시지 표시 후 채팅 시작
+      setMessages([
+        {
+          id: "1",
+          text: "Hello! I'm your AI teacher. Click the microphone to talk to me!",
+          isAI: true,
+        },
+      ]);
+
+      if (selectedLevel && method.id) {
+        setSessionConfig({
+          difficulty: selectedLevel as 'beginner' | 'elementary' | 'intermediate' | 'advanced',
+          learningMode: method.id as 'free-talking' | 'scenario' | 'quiz',
+        });
+      }
+      setStep("chat");
+    }
+  };
+
+  const handleScenarioSubmit = () => {
+    if (!scenarioInput.trim()) {
+      alert("Please enter a scenario!");
+      return;
+    }
+
+    // 빈 AI 메시지 추가 (타이핑 인디케이터 표시용)
+    setMessages([
+      {
+        id: `ai-waiting-${Date.now()}`,
+        text: "",
+        isAI: true,
+      },
+    ]);
+
+    // 백엔드 응답 대기 상태 설정
+    setIsWaitingForScenarioStart(true);
+
+    // scenario와 함께 설정 전송
+    if (selectedLevel && selectedMethod) {
+      setSessionConfig({
+        difficulty: selectedLevel as 'beginner' | 'elementary' | 'intermediate' | 'advanced',
+        learningMode: selectedMethod as 'free-talking' | 'scenario' | 'quiz',
+        scenario: scenarioInput.trim(),
+      });
+      console.log("Scenario submitted:", scenarioInput);
+    }
+
     setStep("chat");
   };
 
   const handleMicClick = () => {
     if (!mediaRecorderRef.current) return;
+
+    // 시나리오 시작 대기 중이면 마이크 비활성화
+    if (isWaitingForScenarioStart) {
+      console.log("[ChatContainer] Mic disabled: waiting for scenario start");
+      return;
+    }
 
     if (isRecording) {
       mediaRecorderRef.current.stop();
@@ -295,11 +384,69 @@ export default function ChatContainer() {
           <ChatView
             messages={messages}
             isRecording={isRecording}
+            isMicDisabled={isWaitingForScenarioStart}
             playingMessageId={playingMessageId}
             onMicClick={handleMicClick}
             onSpeak={handleSpeak}
             onTranslate={handleTranslate}
           />
+        );
+
+      case "scenario":
+        return (
+          <BottomSheet
+            isOpen={true}
+            onClose={handleClose}
+            title={
+              <>
+                <Highlight>시나리오</Highlight>를 입력해주세요
+              </>
+            }
+          >
+            <div style={{ padding: '20px 0' }}>
+              <textarea
+                value={scenarioInput}
+                onChange={(e) => setScenarioInput(e.target.value)}
+                placeholder="예: 카페에서 커피 주문하기, 공항에서 체크인하기, 면접 보기 등"
+                style={{
+                  width: '100%',
+                  minHeight: '120px',
+                  padding: '16px',
+                  fontSize: '16px',
+                  border: '2px solid #e0e0e0',
+                  borderRadius: '12px',
+                  resize: 'vertical',
+                  fontFamily: 'inherit',
+                  outline: 'none',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#007AFF';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#e0e0e0';
+                }}
+              />
+              <button
+                onClick={handleScenarioSubmit}
+                style={{
+                  width: '100%',
+                  marginTop: '16px',
+                  padding: '16px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  backgroundColor: scenarioInput.trim() ? '#007AFF' : '#e0e0e0',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  cursor: scenarioInput.trim() ? 'pointer' : 'not-allowed',
+                  transition: 'all 0.2s',
+                }}
+                disabled={!scenarioInput.trim()}
+              >
+                시작하기
+              </button>
+            </div>
+          </BottomSheet>
         );
 
       case "method":

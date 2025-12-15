@@ -13,6 +13,7 @@ interface Message {
 interface ChatViewProps {
     messages?: Message[];
     isRecording?: boolean;
+    isMicDisabled?: boolean;
     playingMessageId?: string | null;
     onMicClick?: () => void;
     onSpeak?: (messageId: string) => void;
@@ -35,6 +36,7 @@ const defaultMessages: Message[] = [
 export default function ChatView({
     messages = defaultMessages,
     isRecording = false,
+    isMicDisabled = false,
     playingMessageId = null,
     onMicClick,
     onSpeak,
@@ -58,7 +60,14 @@ export default function ChatView({
                 </S.MessagesContainer>
                 <S.InputContainer>
                     {isRecording && <S.RecordingText>Listening...</S.RecordingText>}
-                    <S.MicButton onClick={onMicClick} aria-label="Record voice" isRecording={isRecording}>
+                    {isMicDisabled && <S.RecordingText>Waiting for AI...</S.RecordingText>}
+                    <S.MicButton
+                        onClick={onMicClick}
+                        aria-label="Record voice"
+                        isRecording={isRecording}
+                        disabled={isMicDisabled}
+                        style={{ opacity: isMicDisabled ? 0.5 : 1, cursor: isMicDisabled ? 'not-allowed' : 'pointer' }}
+                    >
                         <Image src="/icons/mic.svg" alt="mic" width={32} height={32} />
                     </S.MicButton>
                 </S.InputContainer>

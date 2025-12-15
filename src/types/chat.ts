@@ -5,4 +5,4 @@ export interface SelectOption {
     description: string;
 }
 
-export type Step = 'level' | 'method' | 'chat';
+export type Step = 'level' | 'method' | 'scenario' | 'chat';
