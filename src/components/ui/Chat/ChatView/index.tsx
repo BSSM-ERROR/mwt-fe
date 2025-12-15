@@ -13,6 +13,7 @@ interface Message {
 interface ChatViewProps {
     messages?: Message[];
     isRecording?: boolean;
+    playingMessageId?: string | null;
     onMicClick?: () => void;
     onSpeak?: (messageId: string) => void;
     onTranslate?: (messageId: string) => void;
@@ -34,6 +35,7 @@ const defaultMessages: Message[] = [
 export default function ChatView({
     messages = defaultMessages,
     isRecording = false,
+    playingMessageId = null,
     onMicClick,
     onSpeak,
     onTranslate,
@@ -48,6 +50,7 @@ export default function ChatView({
                             key={message.id}
                             message={message.text}
                             isAI={message.isAI}
+                            isPlaying={playingMessageId === message.id}
                             onSpeak={() => onSpeak?.(message.id)}
                             onTranslate={() => onTranslate?.(message.id)}
                         />

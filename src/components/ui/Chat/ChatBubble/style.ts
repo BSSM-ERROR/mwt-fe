@@ -40,8 +40,13 @@ export const ActionButton = styled.button`
   opacity: 0.8;
   transition: opacity 0.2s;
 
-  &:hover {
+  &:hover:not(:disabled) {
     opacity: 1;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
   }
 
   svg {

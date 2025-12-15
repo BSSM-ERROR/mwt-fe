@@ -6,6 +6,7 @@ import * as S from './style';
 interface ChatBubbleProps {
     message: string;
     isAI?: boolean;
+    isPlaying?: boolean;
     onSpeak?: () => void;
     onTranslate?: () => void;
 }
@@ -13,6 +14,7 @@ interface ChatBubbleProps {
 export default function ChatBubble({
     message,
     isAI = false,
+    isPlaying = false,
     onSpeak,
     onTranslate,
 }: ChatBubbleProps) {
@@ -24,7 +26,11 @@ export default function ChatBubble({
                 {isTyping ? <S.TypingIndicator>...</S.TypingIndicator> : message}
                 {isAI && !isTyping && (
                     <S.MessageActions>
-                        <S.ActionButton onClick={onSpeak} aria-label="Listen">
+                        <S.ActionButton
+                            onClick={onSpeak}
+                            aria-label="Listen"
+                            disabled={isPlaying}
+                        >
                             <Image src="/icons/speaker.svg" alt="speaker" width={20} height={20} />
                         </S.ActionButton>
                         <S.ActionButton onClick={onTranslate} aria-label="Translate">

@@ -26,14 +26,23 @@ export interface UserTranscriptionData {
   text: string;
 }
 
+export interface TtsResponseData {
+  audioUrl: string;
+  text: string;
+  emotion: string;
+  lipSyncData?: any;
+}
+
 export interface UseSocketReturn {
   socket: Socket | null;
   status: ConnectionStatus;
   processingStep: ProcessingStep;
   sendVoiceMessage: (audioBlob: Blob) => void;
+  generateTts: (text: string, emotion?: string) => void;
   onAudioStream: (callback: (data: AudioStreamData) => void) => void;
   onResponseComplete: (callback: (data: ResponseCompleteData) => void) => void;
   onUserTranscription: (callback: (data: UserTranscriptionData) => void) => void;
+  onTtsResponse: (callback: (data: TtsResponseData) => void) => void;
   onError: (callback: (data: ErrorData) => void) => void;
 }
 
@@ -46,6 +55,7 @@ export function useSocket(): UseSocketReturn {
   const audioStreamCallbackRef = useRef<((data: AudioStreamData) => void) | null>(null);
   const responseCompleteCallbackRef = useRef<((data: ResponseCompleteData) => void) | null>(null);
   const userTranscriptionCallbackRef = useRef<((data: UserTranscriptionData) => void) | null>(null);
+  const ttsResponseCallbackRef = useRef<((data: TtsResponseData) => void) | null>(null);
   const errorCallbackRef = useRef<((data: ErrorData) => void) | null>(null);
 
   useEffect(() => {
@@ -97,6 +107,13 @@ export function useSocket(): UseSocketReturn {
       console.log('[Socket] ai_response (deprecated):', data);
     });
 
+    socket.on('tts_response', (data: TtsResponseData) => {
+      console.log('[Socket] tts_response:', data);
+      if (ttsResponseCallbackRef.current) {
+        ttsResponseCallbackRef.current(data);
+      }
+    });
+
     socket.on('error', (data: ErrorData) => {
       console.log('[Socket] error:', data);
       setProcessingStep(null);
@@ -121,6 +138,12 @@ export function useSocket(): UseSocketReturn {
     }
   };
 
+  const generateTts = (text: string, emotion: string = 'gentle') => {
+    if (socketRef.current && socketRef.current.connected) {
+      socketRef.current.emit('generate_tts', { text, emotion });
+    }
+  };
+
   const onAudioStream = (callback: (data: AudioStreamData) => void) => {
     audioStreamCallbackRef.current = callback;
   };
@@ -133,6 +156,10 @@ export function useSocket(): UseSocketReturn {
     userTranscriptionCallbackRef.current = callback;
   };
 
+  const onTtsResponse = (callback: (data: TtsResponseData) => void) => {
+    ttsResponseCallbackRef.current = callback;
+  };
+
   const onError = (callback: (data: ErrorData) => void) => {
     errorCallbackRef.current = callback;
   };
@@ -142,9 +169,11 @@ export function useSocket(): UseSocketReturn {
     status,
     processingStep,
     sendVoiceMessage,
+    generateTts,
     onAudioStream,
     onResponseComplete,
     onUserTranscription,
+    onTtsResponse,
     onError,
   };
 }

@@ -33,9 +33,11 @@ export default function ChatContainer() {
     status,
     processingStep,
     sendVoiceMessage,
+    generateTts,
     onAudioStream,
     onResponseComplete,
     onUserTranscription,
+    onTtsResponse,
     onError,
   } = useSocket();
 
@@ -44,6 +46,7 @@ export default function ChatContainer() {
   const audioQueueRef = useRef<string[]>([]);
   const isPlayingRef = useRef(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
 
   useEffect(() => {
     setupRecording();
@@ -106,10 +109,31 @@ export default function ChatContainer() {
       console.log("[ChatContainer] Response data:", data);
     });
 
+    onTtsResponse((data) => {
+      console.log("[ChatContainer] TTS response received:", data);
+      // base64 오디오를 재생
+      const audio = new Audio(data.audioUrl);
+
+      audio.onended = () => {
+        console.log("TTS audio playback ended");
+        setPlayingMessageId(null);
+      };
+
+      audio.onerror = () => {
+        console.error("TTS audio playback error");
+        setPlayingMessageId(null);
+      };
+
+      audio.play().catch((e) => {
+        console.error("TTS audio play failed:", e);
+        setPlayingMessageId(null);
+      });
+    });
+
     onError((data) => {
       alert("Error: " + data.message);
     });
-  }, [onAudioStream, onUserTranscription, onResponseComplete, onError]);
+  }, [onAudioStream, onUserTranscription, onResponseComplete, onTtsResponse, onError]);
 
   const playNextAudio = () => {
     if (audioQueueRef.current.length === 0) {
@@ -206,7 +230,21 @@ export default function ChatContainer() {
   };
 
   const handleSpeak = (messageId: string) => {
-    console.log("Speak message:", messageId);
+    // 이미 재생 중이면 무시
+    if (playingMessageId === messageId) {
+      return;
+    }
+
+    const message = messages.find((msg) => msg.id === messageId);
+    if (!message || !message.text) {
+      console.warn("Message not found or empty:", messageId);
+      return;
+    }
+
+    console.log("Requesting TTS for message:", message.text);
+    setPlayingMessageId(messageId);
+    // 백엔드에 TTS 생성 요청
+    generateTts(message.text, "gentle");
   };
 
   const handleTranslate = (messageId: string) => {
@@ -220,6 +258,7 @@ export default function ChatContainer() {
           <ChatView
             messages={messages}
             isRecording={isRecording}
+            playingMessageId={playingMessageId}
             onMicClick={handleMicClick}
             onSpeak={handleSpeak}
             onTranslate={handleTranslate}
