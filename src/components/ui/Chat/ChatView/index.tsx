@@ -2,7 +2,9 @@
 
 import Image from 'next/image';
 import ChatBubble from '../ChatBubble';
+import QuizOptions from '../QuizOptions';
 import * as S from './style';
+import type { QuizType, QuizOption } from '@/utils/quizParser';
 
 interface Message {
     id: string;
@@ -15,9 +17,12 @@ interface ChatViewProps {
     isRecording?: boolean;
     isMicDisabled?: boolean;
     playingMessageId?: string | null;
+    quizType?: QuizType;
+    quizOptions?: QuizOption[];
     onMicClick?: () => void;
     onSpeak?: (messageId: string) => void;
     onTranslate?: (messageId: string) => void;
+    onQuizOptionSelect?: (option: QuizOption) => void;
 }
 
 const defaultMessages: Message[] = [
@@ -38,9 +43,12 @@ export default function ChatView({
     isRecording = false,
     isMicDisabled = false,
     playingMessageId = null,
+    quizType = null,
+    quizOptions = [],
     onMicClick,
     onSpeak,
     onTranslate,
+    onQuizOptionSelect,
 }: ChatViewProps) {
     return (
         <S.Overlay>
@@ -57,10 +65,20 @@ export default function ChatView({
                             onTranslate={() => onTranslate?.(message.id)}
                         />
                     ))}
+                    {quizType === 'multiple-choice' && quizOptions.length > 0 && (
+                        <QuizOptions
+                            options={quizOptions}
+                            onSelect={(option) => onQuizOptionSelect?.(option)}
+                        />
+                    )}
                 </S.MessagesContainer>
                 <S.InputContainer>
                     {isRecording && <S.RecordingText>Listening...</S.RecordingText>}
-                    {isMicDisabled && <S.RecordingText>Waiting for AI...</S.RecordingText>}
+                    {isMicDisabled && !isRecording && (
+                        <S.RecordingText>
+                            {quizType === 'multiple-choice' ? 'Select an answer...' : 'Waiting for AI...'}
+                        </S.RecordingText>
+                    )}
                     <S.MicButton
                         onClick={onMicClick}
                         aria-label="Record voice"

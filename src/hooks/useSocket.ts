@@ -48,6 +48,7 @@ export interface UseSocketReturn {
   status: ConnectionStatus;
   processingStep: ProcessingStep;
   sendVoiceMessage: (audioBlob: Blob) => void;
+  sendTextMessage: (text: string) => void;
   generateTts: (text: string, emotion?: string) => void;
   setSessionConfig: (config: SessionConfig) => void;
   onAudioStream: (callback: (data: AudioStreamData) => void) => void;
@@ -183,6 +184,18 @@ export function useSocket(): UseSocketReturn {
     }
   };
 
+  const sendTextMessage = (text: string) => {
+    if (socketRef.current && socketRef.current.connected) {
+      console.log("[Socket] Sending text message:", text);
+      socketRef.current.emit("text_message", { message: text });
+    } else {
+      console.error(
+        "[Socket] Cannot send text message: socket not connected, status:",
+        status
+      );
+    }
+  };
+
   const generateTts = (text: string, emotion: string = "gentle") => {
     if (socketRef.current && socketRef.current.connected) {
       socketRef.current.emit("generate_tts", { text, emotion });
@@ -233,6 +246,7 @@ export function useSocket(): UseSocketReturn {
     status,
     processingStep,
     sendVoiceMessage,
+    sendTextMessage,
     generateTts,
     setSessionConfig,
     onAudioStream,
