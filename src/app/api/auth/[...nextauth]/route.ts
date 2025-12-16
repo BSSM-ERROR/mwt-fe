@@ -3,6 +3,7 @@ import GoogleProvider from "next-auth/providers/google";
 import NaverProvider from "next-auth/providers/naver";
 import KakaoProvider from "next-auth/providers/kakao";
 import { supabaseServer } from "@/lib/supabase-server";
+import { User } from "@/types/user";
 
 export const authOptions: AuthOptions = {
     providers: [
@@ -56,7 +57,7 @@ export const authOptions: AuthOptions = {
                             name: user.name || userId,
                             email: email,
                             profile_image: user.image || '',
-                        } as any);
+                        });
 
                     if (error) {
                         return false;
@@ -78,17 +79,18 @@ export const authOptions: AuthOptions = {
                     .single();
 
                 if (userData) {
-                    token.id = (userData as any).id;
-                    token.name = (userData as any).name;
-                    token.email = (userData as any).email;
-                    token.picture = (userData as any).profile_image;
+                    const user = userData as User;
+                    token.id = user.id;
+                    token.name = user.name;
+                    token.email = user.email;
+                    token.picture = user.profile_image;
                 }
             }
             return token;
         },
         async session({ session, token }) {
             if (token) {
-                (session.user as any).id = token.id;
+                session.user.id = token.id;
                 session.user.name = token.name;
                 session.user.email = token.email;
                 session.user.image = token.picture;
