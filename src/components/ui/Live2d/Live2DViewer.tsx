@@ -117,7 +117,7 @@ export default function Live2DViewer({ className, speaking = false }: Props) {
         model.on("pointermove", (e) => {
           if (isDragging) {
             const localPoint = e.data.getLocalPosition(model);
-            if (localPoint.y < 600) {
+            if (localPoint.y < 800 && localPoint.y >= 300) {
               isPetting = true;
             } else {
               isPetting = false;
