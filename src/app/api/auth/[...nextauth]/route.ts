@@ -42,26 +42,29 @@ export const authOptions: AuthOptions = {
                     email = `${userId}@${account?.provider}.local`;
                 }
 
-                const { error } = await supabaseServer
+                const { data: existingUser } = await supabaseServer
                     .from('user')
-                    .upsert({
-                        id: userId,
-                        name: user.name || userId,
-                        email: email,
-                        profile_image: user.image || '',
-                    } as any, {
-                        onConflict: 'email',
-                        ignoreDuplicates: true,
-                    });
+                    .select('*')
+                    .eq('email', email)
+                    .single();
 
-                if (error) {
-                    console.error('Error upserting user:', error);
-                    return false;
+                if (!existingUser) {
+                    const { error } = await supabaseServer
+                        .from('user')
+                        .insert({
+                            id: userId,
+                            name: user.name || userId,
+                            email: email,
+                            profile_image: user.image || '',
+                        } as any);
+
+                    if (error) {
+                        return false;
+                    }
                 }
 
                 return true;
             } catch (error) {
-                console.error('SignIn error:', error);
                 return false;
             }
         },
