@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as S from "./style";
+import { usePettingMission } from "@/hooks/useMission";
 
 const MODEL_PATH = "/assets/live2d/MyWaifuTeacher/4.model3.json";
 const CUBISM_CORE_SRC = "/assets/live2d/live2dcubismcore.min.js";
@@ -13,10 +14,16 @@ export default function Live2DViewer({ className, speaking = false }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const speakingRef = useRef(speaking);
+  const { mutate: completePetting } = usePettingMission();
+  const completePettingRef = useRef(completePetting);
 
   useEffect(() => {
     speakingRef.current = speaking;
   }, [speaking]);
+
+  useEffect(() => {
+    completePettingRef.current = completePetting;
+  }, [completePetting]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -109,16 +116,19 @@ export default function Live2DViewer({ className, speaking = false }: Props) {
 
         let isDragging = false;
         let isPetting = false;
+        let hasPetted = false;
         let eyeOpenValue = 1;
 
         model.on("pointerdown", () => {
           isDragging = true;
+          hasPetted = false;
         });
         model.on("pointermove", (e) => {
           if (isDragging) {
             const localPoint = e.data.getLocalPosition(model);
             if (localPoint.y < 800 && localPoint.y >= 300) {
               isPetting = true;
+              hasPetted = true;
             } else {
               isPetting = false;
             }
@@ -126,8 +136,12 @@ export default function Live2DViewer({ className, speaking = false }: Props) {
         });
 
         const stopPetting = () => {
+          if (hasPetted) {
+            completePettingRef.current();
+          }
           isDragging = false;
           isPetting = false;
+          hasPetted = false;
         };
 
         model.on("pointerup", stopPetting);
