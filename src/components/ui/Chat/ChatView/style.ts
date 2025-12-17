@@ -56,3 +56,15 @@ export const RecordingText = styled.div`
     }
   }
 `;
+
+export const ProgressText = styled.div`
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px 12px;
+  border-radius: 12px;
+`;

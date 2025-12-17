@@ -39,6 +39,8 @@ export default function ChatContainer() {
   const [currentQuizOptions, setCurrentQuizOptions] = useState<QuizOption[]>(
     []
   );
+  const [isSessionEnded, setIsSessionEnded] = useState(false);
+  const [sessionProgress, setSessionProgress] = useState({ current: 0, total: 0 });
 
   const {
     status,
@@ -53,6 +55,8 @@ export default function ChatContainer() {
     onTtsResponse,
     onSessionConfigUpdated,
     onError,
+    onSessionEnded,
+    onSessionProgress,
   } = useSocket();
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -220,6 +224,25 @@ export default function ChatContainer() {
         return filtered;
       });
     });
+
+    onSessionEnded((data) => {
+      console.log("[ChatContainer] Session ended:", data);
+      setIsSessionEnded(true);
+      alert(data.message); // or use a custom modal component
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `system-session-ended-${Date.now()}`,
+          text: `--- Session Ended: ${data.message} ---`,
+          isAI: true, // System messages can be treated as AI for styling purposes
+        },
+      ]);
+    });
+
+    onSessionProgress((data) => {
+      console.log("[ChatContainer] Session progress:", data);
+      setSessionProgress(data);
+    });
   }, [
     onAudioStream,
     onUserTranscription,
@@ -227,6 +250,8 @@ export default function ChatContainer() {
     onTtsResponse,
     onSessionConfigUpdated,
     onError,
+    onSessionEnded,
+    onSessionProgress,
   ]);
 
   const playNextAudio = () => {
@@ -418,9 +443,9 @@ export default function ChatContainer() {
   const handleMicClick = () => {
     if (!mediaRecorderRef.current) return;
 
-    // 시나리오 시작 대기 중이면 마이크 비활성화
-    if (isWaitingForScenarioStart) {
-      console.log("[ChatContainer] Mic disabled: waiting for scenario start");
+    // 시나리오 시작 대기 중이거나 세션 종료 시 마이크 비활성화
+    if (isWaitingForScenarioStart || isSessionEnded) {
+      console.log("[ChatContainer] Mic disabled: waiting for AI response or session ended");
       return;
     }
 
@@ -497,7 +522,7 @@ export default function ChatContainer() {
             messages={messages}
             isRecording={isRecording}
             isMicDisabled={
-              isWaitingForScenarioStart || currentQuizType === "multiple-choice"
+              isWaitingForScenarioStart || currentQuizType === "multiple-choice" || isSessionEnded
             }
             playingMessageId={playingMessageId}
             quizType={currentQuizType}
@@ -506,6 +531,7 @@ export default function ChatContainer() {
             onSpeak={handleSpeak}
             onTranslate={handleTranslate}
             onQuizOptionSelect={handleQuizOptionSelect}
+            sessionProgress={sessionProgress}
           />
         );
 

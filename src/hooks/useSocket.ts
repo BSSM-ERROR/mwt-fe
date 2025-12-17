@@ -7,6 +7,16 @@ export type ConnectionStatus = "connected" | "disconnected";
 
 export type ProcessingStep = "transcribing" | "thinking" | "speaking" | null;
 
+export interface SessionEndedData {
+  message: string;
+  reason: string;
+}
+
+export interface SessionProgressData {
+  current: number;
+  total: number;
+}
+
 export interface AudioStreamData {
   text: string;
   audioUrl: string;
@@ -61,6 +71,8 @@ export interface UseSocketReturn {
     callback: (data: SessionConfigUpdatedData) => void
   ) => void;
   onError: (callback: (data: ErrorData) => void) => void;
+  onSessionEnded: (callback: (data: SessionEndedData) => void) => void;
+  onSessionProgress: (callback: (data: SessionProgressData) => void) => void;
 }
 
 // const SOCKET_URL = 'https://mwt-be.onrender.com';
@@ -86,6 +98,12 @@ export function useSocket(): UseSocketReturn {
     ((data: SessionConfigUpdatedData) => void) | null
   >(null);
   const errorCallbackRef = useRef<((data: ErrorData) => void) | null>(null);
+  const sessionEndedCallbackRef = useRef<
+    ((data: SessionEndedData) => void) | null
+  >(null);
+  const sessionProgressCallbackRef = useRef<
+    ((data: SessionProgressData) => void) | null
+  >(null);
 
   useEffect(() => {
     const socket = io(SOCKET_URL);
@@ -159,6 +177,21 @@ export function useSocket(): UseSocketReturn {
       setProcessingStep(null);
       if (errorCallbackRef.current) {
         errorCallbackRef.current(data);
+      }
+    });
+
+    socket.on("session_ended", (data: SessionEndedData) => {
+      console.log("[Socket] session_ended:", data);
+      setProcessingStep(null);
+      if (sessionEndedCallbackRef.current) {
+        sessionEndedCallbackRef.current(data);
+      }
+    });
+
+    socket.on("session_progress", (data: SessionProgressData) => {
+      console.log("[Socket] session_progress:", data);
+      if (sessionProgressCallbackRef.current) {
+        sessionProgressCallbackRef.current(data);
       }
     });
 
@@ -241,6 +274,14 @@ export function useSocket(): UseSocketReturn {
     errorCallbackRef.current = callback;
   };
 
+  const onSessionEnded = (callback: (data: SessionEndedData) => void) => {
+    sessionEndedCallbackRef.current = callback;
+  };
+
+  const onSessionProgress = (callback: (data: SessionProgressData) => void) => {
+    sessionProgressCallbackRef.current = callback;
+  };
+
   return {
     socket: socketRef.current,
     status,
@@ -255,5 +296,7 @@ export function useSocket(): UseSocketReturn {
     onTtsResponse,
     onSessionConfigUpdated,
     onError,
+    onSessionEnded,
+    onSessionProgress,
   };
 }

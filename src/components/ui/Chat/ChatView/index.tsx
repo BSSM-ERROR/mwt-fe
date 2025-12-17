@@ -20,6 +20,8 @@ interface ChatViewProps {
     playingMessageId?: string | null;
     quizType?: QuizType;
     quizOptions?: QuizOption[];
+    isSessionEnded?: boolean;
+    sessionProgress?: { current: number; total: number };
     onMicClick?: () => void;
     onSpeak?: (messageId: string) => void;
     onTranslate?: (messageId: string) => void;
@@ -50,6 +52,8 @@ export default function ChatView({
     onSpeak,
     onTranslate,
     onQuizOptionSelect,
+    isSessionEnded = false,
+    sessionProgress = { current: 0, total: 0 },
 }: ChatViewProps) {
     // 마지막 AI 메시지 인덱스 찾기
     const lastAIMessageIndex = messages.length > 0
@@ -59,6 +63,11 @@ export default function ChatView({
     return (
         <S.Overlay>
             <S.Container>
+                {sessionProgress.total > 0 && (
+                    <S.ProgressText>
+                        {sessionProgress.current} / {sessionProgress.total}
+                    </S.ProgressText>
+                )}
                 <S.Handle />
                 <S.MessagesContainer>
                     {messages.map((message, index) => {
@@ -90,7 +99,7 @@ export default function ChatView({
                     {isRecording && <S.RecordingText>Listening...</S.RecordingText>}
                     {isMicDisabled && !isRecording && (
                         <S.RecordingText>
-                            {quizType === 'multiple-choice' ? 'Select an answer...' : 'Waiting for AI...'}
+                            {isSessionEnded ? 'Session Ended' : (quizType === 'multiple-choice' ? 'Select an answer...' : 'Waiting for AI...')}
                         </S.RecordingText>
                     )}
                     <S.MicButton
