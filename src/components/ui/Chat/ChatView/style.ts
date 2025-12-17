@@ -34,7 +34,37 @@ export const MessagesContainer = styled.div`
 
 export const InputContainer = styled.div`
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   padding: 20px;
   padding-bottom: 40px;
+`;
+
+export const RecordingText = styled.div`
+  color: #FF6B6B;
+  font-size: 16px;
+  font-weight: 600;
+  animation: fadeInOut 1.5s ease-in-out infinite;
+
+  @keyframes fadeInOut {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+`;
+
+export const ProgressText = styled.div`
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px 12px;
+  border-radius: 12px;
 `;
