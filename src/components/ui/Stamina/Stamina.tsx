@@ -3,10 +3,12 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import * as S from "./style";
 import { useStaminaStore } from "@/store/useStaminaStore";
+import { useStamina } from "@/hooks/useStamina";
 
 const Stamina = () => {
   const [timeRemaining, setTimeRemaining] = useState<string>("");
   const { currentStamina, maxStamina, nextRecoveryTime } = useStaminaStore();
+  useStamina();
 
   useEffect(() => {
     if (!nextRecoveryTime || currentStamina >= maxStamina) {
