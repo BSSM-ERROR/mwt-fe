@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as S from "./style";
 import { useLive2DStore } from "@/store/useLive2DStore";
+import { usePettingMission } from "@/hooks/useMission";
 
 const MODEL_PATH = "/assets/live2d/MyWaifuTeacher/4.model3.json";
 const CUBISM_CORE_SRC = "/assets/live2d/live2dcubismcore.min.js";
@@ -39,12 +40,18 @@ export default function Live2DViewer({ className }: Props) {
   const speakingRef = useRef(speaking);
   const lipSyncDataRef = useRef(lipSyncData);
   const startTimeRef = useRef(startTime);
+  const { mutate: completePetting } = usePettingMission();
+  const completePettingRef = useRef(completePetting);
 
   useEffect(() => {
     speakingRef.current = speaking;
     lipSyncDataRef.current = lipSyncData;
     startTimeRef.current = startTime;
   }, [speaking, lipSyncData, startTime]);
+
+  useEffect(() => {
+    completePettingRef.current = completePetting;
+  }, [completePetting]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -137,17 +144,20 @@ export default function Live2DViewer({ className }: Props) {
 
         let isDragging = false;
         let isPetting = false;
+        let hasPetted = false;
         let eyeOpenValue = 1;
         let currentMouthValue = 0; // 부드러운 전환을 위한 현재 입모양 값
 
         model.on("pointerdown", () => {
           isDragging = true;
+          hasPetted = false;
         });
         model.on("pointermove", (e) => {
           if (isDragging) {
             const localPoint = e.data.getLocalPosition(model);
-            if (localPoint.y < 600) {
+            if (localPoint.y < 800 && localPoint.y >= 300) {
               isPetting = true;
+              hasPetted = true;
             } else {
               isPetting = false;
             }
@@ -155,8 +165,12 @@ export default function Live2DViewer({ className }: Props) {
         });
 
         const stopPetting = () => {
+          if (hasPetted) {
+            completePettingRef.current();
+          }
           isDragging = false;
           isPetting = false;
+          hasPetted = false;
         };
 
         model.on("pointerup", stopPetting);

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ReactQueryProvider from "@/lib/ReactQueryProvider";
+import AuthProvider from "@/lib/AuthProvider";
 import { theJamsil } from "@/styles/fonts";
 import GlobalStyles from "@/styles/GlobalStyles";
 import LayoutContainer from "@/components/layout/RootLayout";
@@ -16,13 +17,15 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className={theJamsil.className}>
-                <ReactQueryProvider>
-                    <GlobalStyles />
-                    <LayoutContainer>
-                        {children}
-                    </LayoutContainer>
-                </ReactQueryProvider>
+            <body className={`${theJamsil.variable} ${theJamsil.className}`}>
+                <AuthProvider>
+                    <ReactQueryProvider>
+                        <GlobalStyles />
+                        <LayoutContainer>
+                            {children}
+                        </LayoutContainer>
+                    </ReactQueryProvider>
+                </AuthProvider>
             </body>
         </html>
     );
