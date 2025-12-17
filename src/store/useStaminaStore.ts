@@ -10,6 +10,7 @@ interface StaminaState {
   maxStamina: number;
   nextRecoveryTime: Date;
   increase: (amount: number) => void;
+  decrease: () => void;
 }
 
 export const useStaminaStore = create<StaminaState>((set) => ({

@@ -51,3 +51,32 @@ export const ScenarioSubmitButton = styled.button<{ disabled?: boolean }>`
     transform: scale(0.98);
   }
 `;
+
+export const SessionEndedButtonContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 0;
+`;
+
+export const SessionEndedButton = styled.button<{ variant?: 'primary' | 'secondary' }>`
+  width: 100%;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: "The Jamsil";
+  background-color: ${({ variant }) => (variant === 'secondary' ? '#f0f0f0' : '#f35151')};
+  color: ${({ variant }) => (variant === 'secondary' ? '#666' : 'white')};
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    filter: brightness(0.95);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+`;

@@ -12,6 +12,7 @@ import { difficultyLevels, learningMethods } from "@/constants/chat";
 import type { SelectOption, Step } from "@/types/chat";
 import { useSocket } from "@/hooks/useSocket";
 import { useLive2DStore, type LipSyncFrame } from "@/store/useLive2DStore";
+import { useStaminaStore } from "@/store/useStaminaStore";
 import {
   detectQuizType,
   parseMultipleChoiceOptions,
@@ -40,7 +41,13 @@ export default function ChatContainer() {
     []
   );
   const [isSessionEnded, setIsSessionEnded] = useState(false);
-  const [sessionProgress, setSessionProgress] = useState({ current: 0, total: 0 });
+  const [showSessionEndedModal, setShowSessionEndedModal] = useState(false);
+  const [sessionProgress, setSessionProgress] = useState({
+    current: 0,
+    total: 0,
+  });
+
+  const staminaStore = useStaminaStore();
 
   const {
     status,
@@ -49,6 +56,7 @@ export default function ChatContainer() {
     sendTextMessage,
     generateTts,
     setSessionConfig,
+    quitSession,
     onAudioStream,
     onResponseComplete,
     onUserTranscription,
@@ -228,15 +236,7 @@ export default function ChatContainer() {
     onSessionEnded((data) => {
       console.log("[ChatContainer] Session ended:", data);
       setIsSessionEnded(true);
-      alert(data.message); // or use a custom modal component
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `system-session-ended-${Date.now()}`,
-          text: `--- Session Ended: ${data.message} ---`,
-          isAI: true, // System messages can be treated as AI for styling purposes
-        },
-      ]);
+      setShowSessionEndedModal(true);
     });
 
     onSessionProgress((data) => {
@@ -445,7 +445,9 @@ export default function ChatContainer() {
 
     // 시나리오 시작 대기 중이거나 세션 종료 시 마이크 비활성화
     if (isWaitingForScenarioStart || isSessionEnded) {
-      console.log("[ChatContainer] Mic disabled: waiting for AI response or session ended");
+      console.log(
+        "[ChatContainer] Mic disabled: waiting for AI response or session ended"
+      );
       return;
     }
 
@@ -514,6 +516,35 @@ export default function ChatContainer() {
     console.log("Translate message:", messageId);
   };
 
+  const handleContinueSession = () => {
+    if (staminaStore.currentStamina <= 0) {
+      alert("Not enough stamina!");
+      return;
+    }
+
+    staminaStore.decrease();
+    setIsSessionEnded(false);
+    setShowSessionEndedModal(false);
+
+    // Reset progress
+    setSessionProgress({ current: 0, total: 0 });
+
+    // Re-emit session config
+    if (selectedLevel && selectedMethod) {
+      const config = {
+        difficulty: selectedLevel as "beginner" | "elementary" | "intermediate" | "advanced",
+        learningMode: selectedMethod as "free-talking" | "scenario" | "quiz",
+        scenario: selectedMethod === "scenario" ? scenarioInput.trim() : undefined,
+      };
+      setSessionConfig(config);
+    }
+  };
+
+  const handleQuitSession = () => {
+    quitSession();
+    router.push("/home");
+  };
+
   const renderStep = () => {
     switch (step) {
       case "chat":
@@ -522,7 +553,9 @@ export default function ChatContainer() {
             messages={messages}
             isRecording={isRecording}
             isMicDisabled={
-              isWaitingForScenarioStart || currentQuizType === "multiple-choice" || isSessionEnded
+              isWaitingForScenarioStart ||
+              currentQuizType === "multiple-choice" ||
+              isSessionEnded
             }
             playingMessageId={playingMessageId}
             quizType={currentQuizType}
@@ -610,6 +643,34 @@ export default function ChatContainer() {
         );
     }
   };
+
+  if (showSessionEndedModal) {
+    return (
+      <BottomSheet
+        isOpen={true}
+        onClose={handleQuitSession}
+        title={
+          <>
+            <Highlight>세션이 종료되었습니다</Highlight>
+            <br />
+            계속 진행하시겠습니까?
+          </>
+        }
+      >
+        <S.SessionEndedButtonContainer>
+          <S.SessionEndedButton
+            variant="primary"
+            onClick={handleContinueSession}
+          >
+            계속하기 (스태미나 1 소모)
+          </S.SessionEndedButton>
+          <S.SessionEndedButton variant="secondary" onClick={handleQuitSession}>
+            그만하기
+          </S.SessionEndedButton>
+        </S.SessionEndedButtonContainer>
+      </BottomSheet>
+    );
+  }
 
   return renderStep();
 }

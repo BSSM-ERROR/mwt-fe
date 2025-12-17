@@ -61,6 +61,7 @@ export interface UseSocketReturn {
   sendTextMessage: (text: string) => void;
   generateTts: (text: string, emotion?: string) => void;
   setSessionConfig: (config: SessionConfig) => void;
+  quitSession: () => void;
   onAudioStream: (callback: (data: AudioStreamData) => void) => void;
   onResponseComplete: (callback: (data: ResponseCompleteData) => void) => void;
   onUserTranscription: (
@@ -244,6 +245,13 @@ export function useSocket(): UseSocketReturn {
     }
   };
 
+  const quitSession = () => {
+    if (socketRef.current && socketRef.current.connected) {
+      console.log("[Socket] Quitting session");
+      socketRef.current.emit("quit_session");
+    }
+  };
+
   const onAudioStream = (callback: (data: AudioStreamData) => void) => {
     audioStreamCallbackRef.current = callback;
   };
@@ -290,6 +298,7 @@ export function useSocket(): UseSocketReturn {
     sendTextMessage,
     generateTts,
     setSessionConfig,
+    quitSession,
     onAudioStream,
     onResponseComplete,
     onUserTranscription,
