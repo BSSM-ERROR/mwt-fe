@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { Fragment } from 'react';
 import * as S from './style';
 
 interface ChatBubbleProps {
@@ -11,33 +12,43 @@ interface ChatBubbleProps {
     onTranslate?: () => void;
 }
 
-// 괄호로 묶인 시나리오 설명과 본문을 분리하는 함수
+// 괄호로 묶인 텍스트를 파싱하여 스타일링 적용
+const formatMessage = (text: string) => {
+    const parts = text.split(/(\([^)]+\))/g);
+    return parts.map((part, index) => {
+        if (part.startsWith('(') && part.endsWith(')')) {
+            // 괄호가 첫 번째 요소이거나, 그 앞의 요소가 공백뿐인 경우 (즉, 채팅버블의 시작인 경우)
+            // 위에 줄바꿈을 하지 않음
+            const isFirst = index === 0 || (index === 1 && parts[0].trim() === '');
+            
+            return (
+                <Fragment key={index}>
+                    {!isFirst && <br />}
+                    <S.ScenarioText>{part.slice(1, -1)}</S.ScenarioText>
+                    <br />
+                </Fragment>
+            );
+        }
+        return part;
+    });
+};
+
+// Q. 부분 분리
 function parseScenarioMessage(message: string) {
-    const scenarioMatch = message.match(/^\(([^)]+)\)\s*/);
-    let description: string | null = null;
-    let remainingText = message;
-
-    if (scenarioMatch) {
-        description = scenarioMatch[1]; // 괄호 제거, 내용만
-        remainingText = message.slice(scenarioMatch[0].length).trim();
-    }
-
-    // Q. 부분 분리
-    const questionMatch = remainingText.match(/^(.*?)(Q\..*)$/s);
+    const questionMatch = message.match(/^(.*?)(Q\..*)$/s);
 
     if (questionMatch) {
         const beforeQuestion = questionMatch[1].trim();
         const questionPart = questionMatch[2].trim();
 
         return {
-            description,
             beforeQuestion: beforeQuestion || null,
             question: questionPart,
             content: null
         };
     }
 
-    return { description, beforeQuestion: null, question: null, content: remainingText };
+    return { beforeQuestion: null, question: null, content: message };
 }
 
 export default function ChatBubble({
@@ -48,7 +59,7 @@ export default function ChatBubble({
     onTranslate,
 }: ChatBubbleProps) {
     const isTyping = message === '';
-    const { description, beforeQuestion, question, content } = parseScenarioMessage(message);
+    const { beforeQuestion, question, content } = parseScenarioMessage(message);
 
     return (
         <S.MessageWrapper isAI={isAI}>
@@ -57,17 +68,14 @@ export default function ChatBubble({
                     <S.TypingIndicator>...</S.TypingIndicator>
                 ) : (
                     <>
-                        {description && isAI && (
-                            <S.ScenarioDescription>{description}</S.ScenarioDescription>
-                        )}
                         {beforeQuestion && (
-                            <S.MessageContent>{beforeQuestion}</S.MessageContent>
+                            <S.MessageContent>{formatMessage(beforeQuestion)}</S.MessageContent>
                         )}
                         {question && (
-                            <S.QuestionText>{question}</S.QuestionText>
+                            <S.QuestionText>{formatMessage(question)}</S.QuestionText>
                         )}
-                        {content && !question && (
-                            <S.MessageContent>{content}</S.MessageContent>
+                        {content && (
+                            <S.MessageContent>{formatMessage(content)}</S.MessageContent>
                         )}
                     </>
                 )}
