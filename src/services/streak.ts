@@ -7,3 +7,12 @@ export const getStreak = async (): Promise<StreakResponse> => {
   }
   return res.json();
 };
+
+export const checkInStreak = async (): Promise<StreakResponse & { success: boolean }> => {
+  const res = await fetch("/api/streak", { method: "POST" });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || "Failed to check in");
+  }
+  return res.json();
+};
