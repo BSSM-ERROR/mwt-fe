@@ -20,7 +20,7 @@ export default function StreakContainer() {
       <S.Container>
         <S.Content>
           <S.CardSection>
-            <StreakCard streakCount={0} />
+            <StreakCard streakCount={'--'} />
             <Calendar completedDates={[]} />
           </S.CardSection>
         </S.Content>

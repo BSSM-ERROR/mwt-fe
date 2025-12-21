@@ -4,7 +4,7 @@ import Image from 'next/image';
 import * as S from './style';
 
 interface StreakCardProps {
-  streakCount: number;
+  streakCount: number | string;
 }
 
 export default function StreakCard({ streakCount }: StreakCardProps) {
