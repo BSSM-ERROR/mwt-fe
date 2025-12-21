@@ -1,8 +1,4 @@
-export interface StreakResponse {
-  dayCount: number;
-  lastActiveDate: string | null;
-  completedDates: string[];
-}
+import type { StreakResponse } from "@/types/streak";
 
 export const getStreak = async (): Promise<StreakResponse> => {
   const res = await fetch("/api/streak");
