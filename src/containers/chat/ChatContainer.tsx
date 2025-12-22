@@ -13,6 +13,7 @@ import type { SelectOption, Step } from "@/types/chat";
 import { useSocket } from "@/hooks/useSocket";
 import { useLive2DStore, type LipSyncFrame } from "@/store/useLive2DStore";
 import { useStaminaStore } from "@/store/useStaminaStore";
+import { useCandyStore } from "@/store/useCandyStore";
 import {
   detectQuizType,
   parseMultipleChoiceOptions,
@@ -48,6 +49,7 @@ export default function ChatContainer() {
   });
 
   const staminaStore = useStaminaStore();
+  const candyStore = useCandyStore();
 
   const {
     status,
@@ -516,13 +518,38 @@ export default function ChatContainer() {
     console.log("Translate message:", messageId);
   };
 
-  const handleContinueSession = () => {
+  const handleContinueSession = async () => {
     if (staminaStore.currentStamina <= 0) {
       alert("Not enough stamina!");
       return;
     }
 
-    staminaStore.decrease();
+    try {
+      const response = await fetch("/api/stamina", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: 1 }),
+      });
+
+      if (!response.ok) {
+        console.error("Failed to decrease stamina");
+      } else {
+        const data = await response.json();
+        const nextRecovery =
+          data.energy < data.maxEnergy
+            ? new Date(new Date(data.lastUpdatedAt).getTime() + 60 * 60 * 1000)
+            : null;
+
+        staminaStore.setStamina({
+          currentStamina: data.energy,
+          maxStamina: data.maxEnergy,
+          nextRecoveryTime: nextRecovery,
+        });
+      }
+    } catch (error) {
+      console.error("Error decreasing stamina:", error);
+    }
+
     setIsSessionEnded(false);
     setShowSessionEndedModal(false);
 
@@ -532,15 +559,47 @@ export default function ChatContainer() {
     // Re-emit session config
     if (selectedLevel && selectedMethod) {
       const config = {
-        difficulty: selectedLevel as "beginner" | "elementary" | "intermediate" | "advanced",
+        difficulty: selectedLevel as
+          | "beginner"
+          | "elementary"
+          | "intermediate"
+          | "advanced",
         learningMode: selectedMethod as "free-talking" | "scenario" | "quiz",
-        scenario: selectedMethod === "scenario" ? scenarioInput.trim() : undefined,
+        scenario:
+          selectedMethod === "scenario" ? scenarioInput.trim() : undefined,
       };
       setSessionConfig(config);
     }
   };
 
-  const handleQuitSession = () => {
+  const handleQuitSession = async () => {
+    // 채팅 완전 종료 시: 스태미너 감소, 캔디 +5
+    try {
+      const response = await fetch("/api/stamina", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: 1 }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const nextRecovery =
+          data.energy < data.maxEnergy
+            ? new Date(new Date(data.lastUpdatedAt).getTime() + 60 * 60 * 1000)
+            : null;
+
+        staminaStore.setStamina({
+          currentStamina: data.energy,
+          maxStamina: data.maxEnergy,
+          nextRecoveryTime: nextRecovery,
+        });
+      }
+    } catch (error) {
+      console.error("Error decreasing stamina:", error);
+    }
+
+    candyStore.increase(5);
+
     quitSession();
     router.push("/home");
   };

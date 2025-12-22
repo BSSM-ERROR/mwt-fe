@@ -76,8 +76,8 @@ export interface UseSocketReturn {
   onSessionProgress: (callback: (data: SessionProgressData) => void) => void;
 }
 
-// const SOCKET_URL = 'https://mwt-be.onrender.com';
-const SOCKET_URL = "http://localhost:3001";
+const SOCKET_URL = "https://mwt-be.onrender.com";
+// const SOCKET_URL = "http://localhost:3001";
 
 export function useSocket(): UseSocketReturn {
   const [status, setStatus] = useState<ConnectionStatus>("disconnected");

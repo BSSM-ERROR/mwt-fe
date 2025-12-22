@@ -93,3 +93,77 @@ export async function GET() {
     lastUpdatedAt: newLastUpdated.toISOString(),
   });
 }
+
+export async function POST(req: Request) {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const userId = session.user.id;
+  const { amount = 1 } = await req.json().catch(() => ({}));
+
+  const { data: stamina, error: fetchError } = await supabaseServer
+    .from("stamina")
+    .select("*")
+    .eq("user_id", userId)
+    .single();
+
+  if (fetchError) {
+    return NextResponse.json({ error: fetchError.message }, { status: 500 });
+  }
+
+  if (!stamina) {
+    return NextResponse.json(
+      { error: "Stamina record not found" },
+      { status: 404 }
+    );
+  }
+
+  // Calculate current actual stamina based on time recovery before consuming
+  const currentStamina = stamina;
+  const now = new Date();
+  const lastUpdatedStr = currentStamina.last_updated_at.endsWith("Z")
+    ? currentStamina.last_updated_at
+    : currentStamina.last_updated_at + "Z";
+  const lastUpdated = new Date(lastUpdatedStr);
+  const timeDiff = now.getTime() - lastUpdated.getTime();
+
+  const recoveryCount = Math.floor(timeDiff / RECOVERY_INTERVAL_MS);
+  let effectiveEnergy = currentStamina.energy;
+
+  // Apply recovery first
+  if (recoveryCount > 0 && currentStamina.energy < currentStamina.max_energy) {
+    effectiveEnergy = Math.min(
+      currentStamina.energy + recoveryCount,
+      currentStamina.max_energy
+    );
+  }
+
+  if (effectiveEnergy < amount) {
+    return NextResponse.json({ error: "Not enough stamina" }, { status: 400 });
+  }
+
+  // Decrease energy by amount
+  const newEnergy = effectiveEnergy - amount;
+  const newLastUpdated = now;
+
+  const { error: updateError } = await supabaseServer
+    .from("stamina")
+    .update({
+      energy: newEnergy,
+      last_updated_at: newLastUpdated.toISOString(),
+    })
+    .eq("id", currentStamina.id);
+
+  if (updateError) {
+    return NextResponse.json({ error: updateError.message }, { status: 500 });
+  }
+
+  return NextResponse.json({
+    energy: newEnergy,
+    maxEnergy: currentStamina.max_energy,
+    lastUpdatedAt: newLastUpdated.toISOString(),
+  });
+}
