@@ -94,7 +94,7 @@ export async function GET() {
   });
 }
 
-export async function POST() {
+export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
@@ -102,6 +102,7 @@ export async function POST() {
   }
 
   const userId = session.user.id;
+  const { amount = 1 } = await req.json().catch(() => ({}));
 
   const { data: stamina, error: fetchError } = await supabaseServer
     .from("stamina")
@@ -140,12 +141,12 @@ export async function POST() {
     );
   }
 
-  if (effectiveEnergy <= 0) {
+  if (effectiveEnergy < amount) {
     return NextResponse.json({ error: "Not enough stamina" }, { status: 400 });
   }
 
-  // Decrease energy by 1
-  const newEnergy = effectiveEnergy - 1;
+  // Decrease energy by amount
+  const newEnergy = effectiveEnergy - amount;
   const newLastUpdated = now;
 
   const { error: updateError } = await supabaseServer

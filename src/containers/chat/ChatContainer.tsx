@@ -527,6 +527,8 @@ export default function ChatContainer() {
     try {
       const response = await fetch("/api/stamina", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: 1 }),
       });
 
       if (!response.ok) {
@@ -575,6 +577,8 @@ export default function ChatContainer() {
     try {
       const response = await fetch("/api/stamina", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: 1 }),
       });
 
       if (response.ok) {
